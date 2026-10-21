@@ -73,7 +73,7 @@ def install_participant_routes(app: FastAPI, runtime: PrivateStudyRuntime) -> No
     @app.get("/ops/participant-records/status")
     async def status() -> JSONResponse:
         try:
-            runtime.require_ready()
+            await asyncio.to_thread(runtime.require_ready)
             counts = await asyncio.to_thread(store.summary)
             return JSONResponse(
                 {
@@ -90,7 +90,7 @@ def install_participant_routes(app: FastAPI, runtime: PrivateStudyRuntime) -> No
     @app.post("/ops/participant-records/consents")
     async def consent(request: Request) -> JSONResponse:
         try:
-            runtime.require_ready()
+            await asyncio.to_thread(runtime.require_ready)
             payload = ConsentRequest.model_validate(json.loads(await _read_request_body(request)))
             record = await asyncio.to_thread(
                 store.create_consent,
@@ -115,7 +115,7 @@ def install_participant_routes(app: FastAPI, runtime: PrivateStudyRuntime) -> No
     @app.put("/ops/participant-records/{record_id}/observation")
     async def observation(record_id: str, request: Request) -> JSONResponse:
         try:
-            runtime.require_ready()
+            await asyncio.to_thread(runtime.require_ready)
             payload = ObservationRequest.model_validate(
                 json.loads(await _read_request_body(request))
             )
@@ -140,7 +140,7 @@ def install_participant_routes(app: FastAPI, runtime: PrivateStudyRuntime) -> No
     @app.delete("/ops/participant-records/{record_id}")
     async def withdraw(record_id: str) -> JSONResponse:
         try:
-            runtime.require_ready()
+            await asyncio.to_thread(runtime.require_ready)
             removed = await asyncio.to_thread(store.withdraw, record_id)
             return JSONResponse({"deleted": removed, "record_origin": "developer_rehearsal"})
         except (StudyStorageError, StudyRuntimeUnavailable) as exc:

@@ -1,0 +1,36 @@
+[Unit]
+Description=Create an application-consistent Youth Law rehearsal backup
+After=network-online.target var-lib-youthlaw.mount
+Wants=network-online.target
+Requires=var-lib-youthlaw.mount
+ConditionPathExists=/etc/youthlaw/cloud.json
+ConditionPathExists=/opt/youthlaw/venv/bin/python
+
+[Service]
+Type=oneshot
+User=youthlaw
+Group=youthlaw
+WorkingDirectory=/opt/youthlaw
+ExecStart=/opt/youthlaw/venv/bin/python -m app.cloud_rehearsal backup --config /etc/youthlaw/cloud.json
+UMask=0077
+MemoryMax=512M
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+SystemCallArchitectures=native
+Environment=AWS_CONFIG_FILE=/etc/aws/config
+Environment=AWS_PROFILE=youthlaw-app
+Environment=AWS_SDK_LOAD_CONFIG=1
+ReadWritePaths=/var/lib/youthlaw
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=youth-law-rehearsal-backup
+TimeoutStartSec=10min
