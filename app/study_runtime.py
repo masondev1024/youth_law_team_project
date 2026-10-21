@@ -67,6 +67,19 @@ class PrivateStudyRuntime:
     def require_ready(self) -> None:
         if not self.healthy:
             raise StudyRuntimeUnavailable("storage_unavailable")
+        authority = (
+            self.participant_store.remote_authority
+            if self.participant_store is not None
+            else None
+        )
+        if authority is not None:
+            try:
+                authority.assert_current()
+            except Exception:
+                # Do not expose adapter error details. A stale owner or an
+                # unreachable authority makes cloud-backed storage unavailable.
+                self.healthy = False
+                raise StudyRuntimeUnavailable("storage_unavailable") from None
 
     def record_request(self, record: dict) -> None:
         self.require_ready()

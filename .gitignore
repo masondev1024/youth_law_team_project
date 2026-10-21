@@ -25,3 +25,10 @@ AGENTIC_RAG.md
 
 # 개인 로컬 발표 자료 (PPT/HTML 초안 — 원격 커밋 금지)
 docs/presentations/
+
+# Isolated rehearsal state, generated Lambda archive and provider cache.
+infra/rehearsal/.terraform/
+infra/rehearsal/*.tfstate*
+infra/rehearsal/*.tfplan
+infra/rehearsal/terraform.tfvars
+infra/rehearsal/*.zip

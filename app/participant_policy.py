@@ -41,13 +41,22 @@ def _private_bytes(root: Path, path: Path) -> bytes:
     return data
 
 
-def load_participant_policy(root: Path, notice_file: Path, policy_file: Path) -> dict[str, str]:
+def load_participant_policy(
+    root: Path, notice_file: Path, policy_file: Path, *, release: str = "local-r2"
+) -> dict[str, str]:
     """Return server-pinned digests; never return contact/payment details to logs."""
     notice = _private_bytes(root, notice_file)
     policy = _private_bytes(root, policy_file)
     notice_digest = hashlib.sha256(notice).hexdigest()
     policy_digest = hashlib.sha256(policy).hexdigest()
-    if (notice_digest, policy_digest) != (REHEARSAL_NOTICE_SHA256, REHEARSAL_POLICY_SHA256):
+    expected = (REHEARSAL_NOTICE_SHA256, REHEARSAL_POLICY_SHA256)
+    if release != "local-r2":
+        from app.cloud_policy import DIGESTS, RELEASE
+
+        if release != RELEASE:
+            raise ValueError("unrecognized rehearsal release")
+        expected = DIGESTS
+    if (notice_digest, policy_digest) != expected:
         raise ValueError("unrecognized rehearsal release content")
     if NOTICE_VERSION not in notice.decode("utf-8"):
         raise ValueError("unrecognized notice version")

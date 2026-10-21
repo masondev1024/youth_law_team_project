@@ -138,7 +138,7 @@ def create_app(
         started = time.monotonic()
         admitted = False
         path = request.url.path
-        public = path in {"/", "/rehearsal", "/health"} or path.startswith("/static/")
+        public = path in {"/", "/rehearsal", "/health", "/ready"} or path.startswith("/static/")
         login = path == "/rehearsal/api/login" and request.method == "POST"
         try:
             if (
@@ -162,7 +162,10 @@ def create_app(
                     supplied = request.headers.get("x-rehearsal-csrf", "")
                     if not hmac.compare_digest(supplied.encode(), session.csrf_token.encode()):
                         raise RehearsalError("forbidden", 403)
-            private_runtime.require_ready()
+            if path not in {"/health", "/ready"}:
+                # The cloud authority read is synchronous SDK I/O. Keep it off
+                # the ASGI event loop while preserving the same request gate.
+                await asyncio.to_thread(private_runtime.require_ready)
             if not capacity.admit():
                 raise RehearsalError("busy", 429)
             admitted = True
@@ -183,19 +186,20 @@ def create_app(
         finally:
             if admitted:
                 capacity.release()
-        try:
-            await asyncio.to_thread(
-                private_runtime.record_request,
-                {
-                    "event": "protected_study_request",
-                    "request_id": request_id,
-                    "route": _route_name(path),
-                    "status": response.status_code,
-                    "duration_ms": round((time.monotonic() - started) * 1000, 2),
-                },
-            )
-        except StudyRuntimeUnavailable:
-            response = JSONResponse({"error": "storage_unavailable"}, 503)
+        if path not in {"/health", "/ready"}:
+            try:
+                await asyncio.to_thread(
+                    private_runtime.record_request,
+                    {
+                        "event": "protected_study_request",
+                        "request_id": request_id,
+                        "route": _route_name(path),
+                        "status": response.status_code,
+                        "duration_ms": round((time.monotonic() - started) * 1000, 2),
+                    },
+                )
+            except StudyRuntimeUnavailable:
+                response = JSONResponse({"error": "storage_unavailable"}, 503)
         for key, value in _HEADERS.items():
             response.headers[key] = value
         # This app owns the final headers; the existing app boundaries are not installed.
@@ -217,16 +221,40 @@ def create_app(
     def page(request: Request) -> HTMLResponse:
         return _TEMPLATES.TemplateResponse(request, "rehearsal.html", {})
 
+    async def readiness_response() -> JSONResponse:
+        try:
+            await asyncio.to_thread(private_runtime.require_ready)
+            catalog = await asyncio.to_thread(catalog_readiness)
+        except (StudyRuntimeUnavailable, StudyStorageError, PreparationError):
+            return JSONResponse(
+                {
+                    "status": "storage_unavailable",
+                    "mode": "developer_rehearsal",
+                    "session_admission": False,
+                    "application_input_storage": False,
+                    "external_model_enabled": False,
+                },
+                status_code=503,
+            )
+        return JSONResponse(
+            {
+                "status": "ready",
+                "mode": "developer_rehearsal",
+                "session_admission": False,
+                "application_input_storage": False,
+                "external_model_enabled": False,
+                "catalog": catalog,
+                "runtime": private_runtime.snapshot(),
+            }
+        )
+
     @app.get("/health")
-    def health() -> dict:
-        return {
-            "status": "ready",
-            "mode": "developer_rehearsal",
-            "session_admission": False,
-            "application_input_storage": False,
-            "external_model_enabled": False,
-            "catalog": catalog_readiness(),
-        }
+    async def health() -> JSONResponse:
+        return await readiness_response()
+
+    @app.get("/ready")
+    async def ready() -> JSONResponse:
+        return await readiness_response()
 
     @app.post("/rehearsal/api/login")
     async def login(request: Request) -> JSONResponse:

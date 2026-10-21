@@ -1,0 +1,76 @@
+#!/bin/bash
+set -euo pipefail
+umask 077
+
+exec > >(tee -a /var/log/youth-law-rehearsal-bootstrap.log | logger -t youth-law-bootstrap -s 2>/dev/console) 2>&1
+
+export DEBIAN_FRONTEND=noninteractive
+if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+  sed -i 's#http://#https://#g' /etc/apt/sources.list.d/ubuntu.sources
+fi
+if [ -f /etc/apt/sources.list ]; then
+  sed -i 's#http://#https://#g' /etc/apt/sources.list
+fi
+apt-get update
+apt-get install -y --no-install-recommends python3-venv python3-pip acl curl unzip snapd
+install -d -o root -g root -m 0755 /var/log/youthlaw
+dpkg-query -W -f='$${binary:Package}\t$${Version}\n' | sort > /var/log/youthlaw/os-packages.txt
+python3 --version >> /var/log/youthlaw/os-packages.txt
+chmod 0644 /var/log/youthlaw/os-packages.txt
+
+if ! snap services amazon-ssm-agent >/dev/null 2>&1; then
+  snap install amazon-ssm-agent --classic
+fi
+systemctl enable --now snap.amazon-ssm-agent.amazon-ssm-agent.service
+snap list >> /var/log/youthlaw/os-packages.txt
+
+id youthlaw >/dev/null 2>&1 || useradd --uid 1001 --user-group --home-dir /nonexistent --shell /usr/sbin/nologin youthlaw
+install -d -o root -g root -m 0755 /opt/youthlaw
+install -d -o root -g root -m 0755 /etc/youthlaw
+
+ROOT_PARTITION="$(readlink -f "$(findmnt -n -o SOURCE /)")"
+ROOT_PARENT="$(lsblk -n -o PKNAME "$ROOT_PARTITION" | head -n 1)"
+ROOT_DEVICE="$ROOT_PARTITION"
+[ -z "$ROOT_PARENT" ] || ROOT_DEVICE="/dev/$ROOT_PARENT"
+[ -n "$ROOT_DEVICE" ] || ROOT_DEVICE="$ROOT_PARTITION"
+DATA_DEVICE=""
+for attempt in $(seq 1 60); do
+  for candidate in /dev/disk/by-id/nvme-Amazon_Elastic_Block_Store_*; do
+    [ -b "$candidate" ] || continue
+    candidate_device="$(readlink -f "$candidate")"
+    candidate_type="$(lsblk -dn -o TYPE "$candidate_device" 2>/dev/null || true)"
+    [ "$candidate_type" = "disk" ] || continue
+    if [ "$candidate_device" != "$ROOT_DEVICE" ]; then
+      DATA_DEVICE="$candidate_device"
+      break
+    fi
+  done
+  [ -n "$DATA_DEVICE" ] && break
+  sleep 2
+done
+if [ -z "$DATA_DEVICE" ]; then
+  logger -t youth-law-bootstrap "data EBS device did not appear"
+  exit 1
+fi
+
+if ! blkid "$DATA_DEVICE" >/dev/null 2>&1; then
+  mkfs.ext4 -L youthlaw-data "$DATA_DEVICE"
+fi
+install -d -o root -g root -m 0755 /var/lib/youthlaw
+grep -q '^LABEL=youthlaw-data[[:space:]]' /etc/fstab || \
+  printf '%s\n' 'LABEL=youthlaw-data /var/lib/youthlaw ext4 defaults,nofail,nodev,nosuid 0 2' >> /etc/fstab
+mount /var/lib/youthlaw
+chown 1001:1001 /var/lib/youthlaw
+chmod 0700 /var/lib/youthlaw
+install -d -o root -g root -m 0755 /etc/aws
+cat > /etc/aws/config <<'AWS_CONFIG'
+[profile youthlaw-app]
+role_arn = ${app_role_arn}
+credential_source = Ec2InstanceMetadata
+region = ${aws_region}
+AWS_CONFIG
+chown root:root /etc/aws/config
+chmod 0644 /etc/aws/config
+
+# The application bundle, cloud config, and policy must be installed and checked
+# by the operator before installing/enabling the application systemd units.

@@ -262,6 +262,7 @@ def restore_database(
             stack.enter_context(store.service_lease())
             stack.enter_context(store._locked())
             store.ledger.require_checkpoint(expected_ledger_checkpoint)
+            remote_snapshot = store._merge_remote_intents_locked()
             stage_root = _stage_root(store.root)
             stage = stage_root / f"{uuid.uuid4().hex}-{_STAGE_FILE}"
             _same_source(source, source_info, source_hash)
@@ -299,6 +300,22 @@ def restore_database(
             with stage.open("rb") as stream:
                 os.fsync(stream.fileno())
             _same_source(source, source_info, source_hash)
+            if remote_snapshot is not None:
+                # Do not install a database staged against an obsolete remote
+                # deletion set. Any concurrent authority change requires a
+                # fresh restore pass that applies the newer intents.
+                store.remote_authority.assert_current()
+                current_snapshot = store.remote_authority.snapshot()
+                current_intents, current_highwater = current_snapshot
+                current_value = (
+                    tuple(
+                        (i.request_key_hash, i.expires_at, i.sequence)
+                        for i in current_intents
+                    ),
+                    current_highwater,
+                )
+                if current_value != remote_snapshot:
+                    raise StudyStorageError("snapshot_changed")
             os.replace(stage, store.database)
             _fsync_dir(store.runtime)
             store._validate_runtime(allow_journal=False)

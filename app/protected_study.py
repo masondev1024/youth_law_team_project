@@ -288,7 +288,7 @@ def _install_observation_routes(app: FastAPI, runtime: PrivateStudyRuntime) -> N
     @app.post("/ops/observations")
     async def observation(request: Request):
         try:
-            runtime.require_ready()
+            await asyncio.to_thread(runtime.require_ready)
             key = request.headers.get("Idempotency-Key")
             try:
                 parsed_key = UUID(key) if key is not None else None
@@ -325,7 +325,7 @@ def _install_observation_routes(app: FastAPI, runtime: PrivateStudyRuntime) -> N
     @app.delete("/ops/observations/{record_id}")
     async def withdraw(record_id: str):
         try:
-            runtime.require_ready()
+            await asyncio.to_thread(runtime.require_ready)
             deleted = await asyncio.to_thread(runtime.store.delete_observation, record_id)
             return {"deleted": deleted, "synthetic_only": True}
         except StudyStorageError as exc:
