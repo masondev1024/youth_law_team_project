@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>첫 금융 상담 준비</title>
+  <link rel="stylesheet" href="/static/preparation.css">
+  <script src="/static/preparation.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
+  <header class="site-header">
+    <div class="header-inner">
+      {% if not preparation_only %}
+      <a class="brand" href="/" aria-label="청년 생활법률 상담 AI 첫 화면">생활법률 상담 AI</a>
+      <a class="back-link" href="/">기존 상담으로</a>
+      {% else %}
+      <span class="brand">첫 금융 상담 준비</span>
+      {% endif %}
+    </div>
+  </header>
+
+  <main id="main" class="page-shell">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">금융 문제 · 첫 상담 준비</p>
+      <h1 id="page-title">첫 상담 준비 카드</h1>
+      <p class="lede">상담할 곳과 미리 정리할 내용을 살펴보세요.</p>
+      <div class="notice" role="note">
+        {% if preparation_only %}
+        <p><strong>가상 사례로 상담 준비 흐름을 확인하는 테스트 화면입니다.</strong> 실제 본인의 금융 상황은 선택하지 말고, 제공된 사례에 적힌 내용만 골라 주세요.</p>
+        {% endif %}
+        <p><strong>이 카드는 공식 기관에 처음 상담을 준비하기 위한 안내입니다.</strong> 법률 결론이나 지원 자격을 확정하지 않습니다. 실제 개인정보는 입력하지 마세요.</p>
+      </div>
+    </section>
+
+    <section class="form-panel" aria-labelledby="issue-heading">
+      <div class="step-heading">
+        <span class="step-number" aria-hidden="true">1</span>
+        <div>
+          <h2 id="issue-heading">가장 가까운 고민을 고르세요</h2>
+          <p>가까운 유형을 하나 고르세요. 아래 사실 선택은 잘 모르겠으면 비워 두어도 됩니다.</p>
+        </div>
+      </div>
+      <div class="issue-options" role="group" aria-labelledby="issue-heading">
+        <button class="issue-button" type="button" data-issue="repayment" aria-pressed="false" disabled>갚는 부담이 커졌어요</button>
+        <button class="issue-button" type="button" data-issue="collection" aria-pressed="false" disabled>상환요구 연락을 받았어요</button>
+        <button class="issue-button" type="button" data-issue="procedure" aria-pressed="false" disabled>채무조정/개인회생을 잘 모르겠어요</button>
+      </div>
+
+      <fieldset class="facts-fieldset" id="facts-fieldset" disabled>
+        <legend>{% if preparation_only %}2. 가상 사례에 적힌 사실만 고르세요{% else %}2. 내 상황에 해당한다고 아는 사실만 고르세요{% endif %}</legend>
+        <p class="field-help">{% if preparation_only %}사례에 적힌 사실만 고르세요.{% else %}직접 알고 있는 사실만 고르세요.{% endif %} 모르는 항목은 비워 두어도 카드를 볼 수 있습니다.</p>
+        <div id="facts-list" class="facts-list" aria-live="polite">
+          <p class="muted">선택지를 불러오는 중입니다.</p>
+        </div>
+      </fieldset>
+      <button id="retry-options" class="secondary-button retry-options" type="button" hidden>선택지 다시 불러오기</button>
+
+      <div class="privacy-note">
+        <p><strong>가상 사례를 풀고 있나요?</strong> 사례에 적힌 정보만 선택하세요. 개인의 금액, 계좌번호, 실명은 입력하지 마세요.</p>
+      </div>
+
+      <div class="form-actions">
+        <button id="create-card" class="primary-button" type="button" disabled>준비 카드 만들기</button>
+        <button id="reset-form" class="secondary-button" type="button">초기화</button>
+      </div>
+      <p id="form-status" class="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="card-region" class="card-region" aria-labelledby="card-title" hidden>
+      <div class="card-topline">
+        <div>
+          <p class="eyebrow">상담 전에 살펴볼 내용</p>
+          <h2 id="card-title">준비 카드</h2>
+        </div>
+        <span id="card-status" class="status-badge"></span>
+      </div>
+      <p id="card-intro" class="card-intro"></p>
+      <div id="card-sections" class="card-sections"></div>
+      <div class="source-note">
+        <p><strong>안내의 종류</strong></p>
+        <p><span class="kind-label official">공식 안내</span> 기관의 공개 안내를 정리했습니다. 개인별 자격이나 상담 결과를 확인한 것은 아닙니다.</p>
+        <p><span class="kind-label suggestion">상담 준비 제안</span> 상담을 돕기 위한 제안입니다. 신청에 필요한 공식 서류 목록을 뜻하지 않습니다.</p>
+      </div>
+      <div class="card-actions">
+        <button id="copy-card" class="secondary-button" type="button">카드 내용 복사</button>
+        <button id="reset-after-card" class="text-button" type="button">선택과 카드 지우기</button>
+      </div>
+      <p id="copy-status" class="status" role="status" aria-live="polite"></p>
+      <label id="manual-copy-label" for="manual-copy" class="field-help" hidden>자동 복사를 사용할 수 없습니다. 아래 내용을 직접 선택해 복사하세요.</label>
+      <textarea id="manual-copy" class="manual-copy" readonly hidden></textarea>
+    </section>
+
+    <footer class="page-footer">
+      <p>상담 전 준비를 돕는 정보입니다. 개인별 법률 판단이나 자격 확인은 공식 상담 기관에 문의해 주세요.</p>
+    </footer>
+  </main>
+</body>
+</html>

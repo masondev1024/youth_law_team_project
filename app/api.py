@@ -18,6 +18,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app import service
+from app.preparation_boundary import install_preparation_boundary
+from app.preparation_routes import router as preparation_router
 from app.schemas import ConsultRequest, ConsultResponse, DraftRequest, DraftResponse
 
 _HERE = Path(__file__).resolve().parent
@@ -27,6 +29,9 @@ app = FastAPI(
     description="현행 법령 근거 + 공식 연락처 + 문서초안 — 노동/주택/소비자/금융",
     version="0.1.0",
 )
+app.state.preparation_only = False
+install_preparation_boundary(app, preparation_only=False)
+app.include_router(preparation_router)
 app.mount("/static", StaticFiles(directory=_HERE / "static"), name="static")
 templates = Jinja2Templates(directory=_HERE / "templates")
 
