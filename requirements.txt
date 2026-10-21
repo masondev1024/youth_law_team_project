@@ -9,7 +9,7 @@ python-dotenv
 fastapi
 uvicorn
 jinja2
-httpx
+httpx==0.28.1
 # --- EC2/로컬 실검색용 (CI에선 불필요 — rag.py가 stub 폴백) ---
 # chromadb
 # sentence-transformers

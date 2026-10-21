@@ -1,0 +1,484 @@
+{
+  "schema": "rehearsal-runtime-qa.v1",
+  "result": "pass",
+  "synthetic_only": true,
+  "external_models": false,
+  "participant_admission": false,
+  "counts": {
+    "http_requests": 43,
+    "peak_connections": 9,
+    "scenarios": 47
+  },
+  "phases": {
+    "authenticated_load": "pass",
+    "authentication_and_boundary": "pass",
+    "corrupt_store_fail_closed": "pass",
+    "crash_recovery": "pass",
+    "pre_withdrawal_backup_recovery": "pass",
+    "slow_body_and_capacity": "pass",
+    "withdrawal_and_log_privacy": "pass"
+  },
+  "cases": [
+    {
+      "actual": 200,
+      "duration_ms": 510.51,
+      "expected": 200,
+      "scenario": "server_start",
+      "status": "pass"
+    },
+    {
+      "actual": {
+        "external_model_enabled": false,
+        "session_admission": false,
+        "status": "ready"
+      },
+      "duration_ms": 4.74,
+      "expected": {
+        "external_model_enabled": false,
+        "session_admission": false,
+        "status": "ready"
+      },
+      "scenario": "health_admission_closed",
+      "status": "pass"
+    },
+    {
+      "actual": 401,
+      "duration_ms": 2.59,
+      "expected": 401,
+      "scenario": "missing_cookie",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 6.64,
+      "expected": 200,
+      "scenario": "cookie_login",
+      "status": "pass"
+    },
+    {
+      "actual": true,
+      "duration_ms": 6.64,
+      "expected": true,
+      "scenario": "task_scenarios_hidden_at_login",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 6.61,
+      "expected": 200,
+      "scenario": "cookie_auth",
+      "status": "pass"
+    },
+    {
+      "actual": 403,
+      "duration_ms": 2.9,
+      "expected": 403,
+      "scenario": "csrf_rejected",
+      "status": "pass"
+    },
+    {
+      "actual": 403,
+      "duration_ms": 2.31,
+      "expected": 403,
+      "scenario": "origin_rejected",
+      "status": "pass"
+    },
+    {
+      "actual": 404,
+      "duration_ms": 2.53,
+      "expected": 404,
+      "scenario": "forwarded_header_rejected",
+      "status": "pass"
+    },
+    {
+      "actual": 404,
+      "duration_ms": 2.86,
+      "expected": 404,
+      "scenario": "wrong_host_rejected",
+      "status": "pass"
+    },
+    {
+      "actual": 422,
+      "duration_ms": 4.67,
+      "expected": 422,
+      "scenario": "malformed_json_rejected",
+      "status": "pass"
+    },
+    {
+      "actual": 413,
+      "duration_ms": 3.61,
+      "expected": 413,
+      "scenario": "oversize_body_rejected",
+      "status": "pass"
+    },
+    {
+      "actual": {
+        "status": 408,
+        "under_8_seconds": true
+      },
+      "duration_ms": 5005.83,
+      "expected": {
+        "status": 408,
+        "under_8_seconds": true
+      },
+      "scenario": "slow_body_timeout",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 11.75,
+      "expected": 200,
+      "scenario": "health_after_slow_body",
+      "status": "pass"
+    },
+    {
+      "actual": {
+        "attempts_under_10": true,
+        "retry_after": "1",
+        "status": 429
+      },
+      "duration_ms": 9.45,
+      "expected": {
+        "attempts_under_10": true,
+        "retry_after": "1",
+        "status": 429
+      },
+      "scenario": "capacity_rejected_ninth",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 59.93,
+      "expected": 200,
+      "scenario": "capacity_recovered",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 11.26,
+      "expected": 200,
+      "scenario": "recovery_login",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 20.84,
+      "expected": 200,
+      "scenario": "synthetic_consent",
+      "status": "pass"
+    },
+    {
+      "actual": true,
+      "duration_ms": 20.84,
+      "expected": true,
+      "scenario": "task_scenarios_hidden_after_consent",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 13.0,
+      "expected": 200,
+      "scenario": "unsaved_record_restore",
+      "status": "pass"
+    },
+    {
+      "actual": true,
+      "duration_ms": 13.0,
+      "expected": true,
+      "scenario": "selected_task_scenario_after_unsaved_restore",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 11.72,
+      "expected": 200,
+      "scenario": "task_start",
+      "status": "pass"
+    },
+    {
+      "actual": true,
+      "duration_ms": 11.72,
+      "expected": true,
+      "scenario": "only_selected_task_scenario_after_start",
+      "status": "pass"
+    },
+    {
+      "actual": {
+        "all_status_200": true,
+        "payload_consistent": true,
+        "payload_matches_contract": true,
+        "request_count": 1,
+        "requests_at_most_36": true
+      },
+      "duration_ms": 10.04,
+      "expected": {
+        "all_status_200": true,
+        "payload_consistent": true,
+        "payload_matches_contract": true,
+        "request_count": 1,
+        "requests_at_most_36": true
+      },
+      "scenario": "authenticated_load_1",
+      "status": "pass"
+    },
+    {
+      "actual": {
+        "all_status_200": true,
+        "payload_consistent": true,
+        "payload_matches_contract": true,
+        "request_count": 4,
+        "requests_at_most_36": true
+      },
+      "duration_ms": 32.05,
+      "expected": {
+        "all_status_200": true,
+        "payload_consistent": true,
+        "payload_matches_contract": true,
+        "request_count": 4,
+        "requests_at_most_36": true
+      },
+      "scenario": "authenticated_load_4",
+      "status": "pass"
+    },
+    {
+      "actual": {
+        "all_status_200": true,
+        "payload_consistent": true,
+        "payload_matches_contract": true,
+        "request_count": 8,
+        "requests_at_most_36": true
+      },
+      "duration_ms": 59.37,
+      "expected": {
+        "all_status_200": true,
+        "payload_consistent": true,
+        "payload_matches_contract": true,
+        "request_count": 8,
+        "requests_at_most_36": true
+      },
+      "scenario": "authenticated_load_8",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 15.79,
+      "expected": 200,
+      "scenario": "synthetic_observation",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 63.23,
+      "expected": 200,
+      "scenario": "server_start",
+      "status": "pass"
+    },
+    {
+      "actual": 401,
+      "duration_ms": 4.81,
+      "expected": 401,
+      "scenario": "stale_cookie_rejected",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 8.69,
+      "expected": 200,
+      "scenario": "fresh_login_after_restart",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 12.72,
+      "expected": 200,
+      "scenario": "record_restore_after_restart",
+      "status": "pass"
+    },
+    {
+      "actual": true,
+      "duration_ms": 12.72,
+      "expected": true,
+      "scenario": "selected_task_scenario_after_saved_observation_restore",
+      "status": "pass"
+    },
+    {
+      "actual": true,
+      "duration_ms": 12.72,
+      "expected": true,
+      "scenario": "exact_observation_recovery",
+      "status": "pass"
+    },
+    {
+      "actual": {
+        "integrity": "ok",
+        "records": 1,
+        "revocations": 0
+      },
+      "duration_ms": 0.0,
+      "expected": {
+        "integrity": "ok",
+        "records": 1,
+        "revocations": 0
+      },
+      "scenario": "pre_withdrawal_backup_contains_record",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 14.45,
+      "expected": 200,
+      "scenario": "withdrawal",
+      "status": "pass"
+    },
+    {
+      "actual": true,
+      "duration_ms": 14.45,
+      "expected": true,
+      "scenario": "task_scenarios_cleared_after_withdrawal",
+      "status": "pass"
+    },
+    {
+      "actual": 1,
+      "duration_ms": 6.32,
+      "expected": 1,
+      "scenario": "old_backup_latest_deletion_applied",
+      "status": "pass"
+    },
+    {
+      "actual": true,
+      "duration_ms": 0.0,
+      "expected": true,
+      "scenario": "old_backup_source_preserved",
+      "status": "pass"
+    },
+    {
+      "actual": {
+        "integrity": "ok",
+        "records": 0,
+        "revocations": 1
+      },
+      "duration_ms": 0.0,
+      "expected": {
+        "integrity": "ok",
+        "records": 0,
+        "revocations": 1
+      },
+      "scenario": "old_backup_installed_without_withdrawn_record",
+      "status": "pass"
+    },
+    {
+      "actual": {
+        "integrity": "ok",
+        "records": 0,
+        "revocations": 1
+      },
+      "duration_ms": 0.0,
+      "expected": {
+        "integrity": "ok",
+        "records": 0,
+        "revocations": 1
+      },
+      "scenario": "withdrawal_ledger_integrity",
+      "status": "pass"
+    },
+    {
+      "actual": {
+        "allowlist_valid": true,
+        "forbidden_values_absent": true,
+        "log_count_positive": true
+      },
+      "duration_ms": 0.0,
+      "expected": {
+        "allowlist_valid": true,
+        "forbidden_values_absent": true,
+        "log_count_positive": true
+      },
+      "scenario": "private_log_allowlist_and_redaction",
+      "status": "pass"
+    },
+    {
+      "actual": true,
+      "duration_ms": 0.0,
+      "expected": true,
+      "scenario": "corrupt_store_fails_closed",
+      "status": "pass"
+    },
+    {
+      "actual": true,
+      "duration_ms": 0.0,
+      "expected": true,
+      "scenario": "backup_digest_verified",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 491.74,
+      "expected": 200,
+      "scenario": "server_start",
+      "status": "pass"
+    },
+    {
+      "actual": 200,
+      "duration_ms": 11.52,
+      "expected": 200,
+      "scenario": "login_after_backup_restore",
+      "status": "pass"
+    },
+    {
+      "actual": 0,
+      "duration_ms": 11.57,
+      "expected": 0,
+      "scenario": "withdrawn_state_not_resurrected",
+      "status": "pass"
+    },
+    {
+      "actual": 410,
+      "duration_ms": 9.7,
+      "expected": 410,
+      "scenario": "withdrawn_record_restore_denied",
+      "status": "pass"
+    }
+  ],
+  "cleanup": {
+    "child_reaped": true,
+    "listener_closed": true,
+    "temporary_root_removed": true
+  },
+  "elapsed_seconds": 8.42,
+  "source_sha256": {
+    "app/participant_deletion_ledger.py": "f4069e52a182b58d332d4bc217232b8bf101490c7a9e0e15e4e046cfef7c6fa6",
+    "app/participant_recovery.py": "cfee4f672537e1f8705a828d4999fd713c5b9f0779395b47a22a7efb4438fd39",
+    "app/participant_storage.py": "dfc53953cbaac6a62db2f76e94a023227b9feb7af7a2672ba0069d56994098f9",
+    "app/rehearsal_app.py": "04752848390ae1348f8903c47e8ab7b70f357ec2ffe2f15f3d1f15b8b5992cb2",
+    "app/rehearsal_sessions.py": "3550bb251d9e7dd288f14b89c1500356b1eb0fa75585b864b82d1cd39c300ec7",
+    "app/study_runtime.py": "b6ee5ad59a71bc9a6306c82174990d2ff4228d89d286e7580ba3f0e89b05ab17",
+    "app/study_storage.py": "28acd3b3d4cae79afe9948cd3975dccdce74f8137346d7e1e5a8da1dddcfbf4b",
+    "scripts/check_rehearsal_runtime.py": "1a0cbec33a81b9fff0f73e3fb77d933e0d9c7da0578d21bb72fa594a1a4e1f83"
+  },
+  "child_memory_observation": {
+    "limit_bytes": 268435456,
+    "limit_exceeded": false,
+    "max_sampled_rss_kb": 63424,
+    "samples": 29,
+    "sampling_method": "ps RSS sampled every 250ms",
+    "scope": "sampled observations, not a peak-memory guarantee"
+  },
+  "load_endpoint": "/api/preparation/card",
+  "load_metrics": {
+    "1": {
+      "p50_ms": 10.04,
+      "p95_ms": 10.04,
+      "requests": 1
+    },
+    "4": {
+      "p50_ms": 25.12,
+      "p95_ms": 32.05,
+      "requests": 4
+    },
+    "8": {
+      "p50_ms": 40.05,
+      "p95_ms": 59.37,
+      "requests": 8
+    }
+  }
+}
