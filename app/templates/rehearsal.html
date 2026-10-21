@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>진행자 개발 리허설</title>
+  <link rel="stylesheet" href="/static/rehearsal.css">
+  <script src="/static/rehearsal.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <span class="brand">진행자 개발 리허설</span>
+      <button id="logout-button" class="quiet-button" type="button" hidden>로그아웃</button>
+    </div>
+  </header>
+  <main id="main" class="page-shell">
+    <section class="scope-banner" aria-label="리허설 범위">
+      <strong>무급 개발 리허설 전용</strong>
+      <span>독립 참가자 0명 · 실제 참가자 모집/세션 승인 없음 · 참가자 등록은 닫혀 있습니다.</span>
+    </section>
+    <p id="global-status" class="status" role="status" aria-live="polite" tabindex="-1"></p>
+    <button id="reload-state-button" class="secondary-button" type="button" hidden>현재 상태 다시 불러오기</button>
+
+    <section id="login-panel" class="panel" aria-labelledby="login-title">
+      <h1 id="login-title">운영자 로그인</h1>
+      <p>로컬 개발 리허설용 비밀 토큰을 입력하세요. 토큰은 이 브라우저에 저장하지 않습니다.</p>
+      <form id="login-form" autocomplete="off">
+        <label for="login-token">리허설 토큰</label>
+        <input id="login-token" name="token" type="password" autocomplete="off" required>
+        <button class="primary-button" type="submit">로그인</button>
+      </form>
+    </section>
+
+    <div id="workspace" hidden>
+      <section id="notice-panel" class="panel" aria-labelledby="notice-title" hidden>
+        <h1 id="notice-title">리허설 안내</h1>
+        <p class="version-line">안내 <span id="notice-version"></span> · 정책 <span id="policy-version"></span></p>
+        <div id="notice-text" class="notice-copy" tabindex="0"></div>
+      </section>
+
+      <section id="case-panel" class="panel" aria-labelledby="case-title" hidden>
+        <h2 id="case-title">한 가지 가상 사례를 선택하세요</h2>
+        <p>한 세션에서는 사례 하나만 진행합니다. 사례에 적힌 정보만 사용하고 실제 신청이나 연락은 하지 않습니다.</p>
+        <label for="task-select">가상 사례</label>
+        <select id="task-select"></select>
+      <p id="task-preview" class="task-preview"></p>
+
+        <fieldset class="consents">
+          <legend>필수 확인 항목</legend>
+          <label><input id="adult-consent" type="checkbox"> 만 19세 이상임을 확인합니다.</label>
+          <label><input id="participation-consent" type="checkbox"> 안내 내용을 읽었으며 리허설 참여에 동의합니다.</label>
+          <label><input id="recording-consent" type="checkbox"> 코드형 관찰 기록 저장에 동의합니다.</label>
+        </fieldset>
+        <div class="actions">
+          <button id="accept-button" class="primary-button" type="button" disabled>동의하고 진행</button>
+          <button id="decline-button" class="secondary-button" type="button">동의하지 않음</button>
+        </div>
+        <p id="case-status" class="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section id="restore-panel" class="panel" aria-labelledby="restore-title" hidden>
+        <h2 id="restore-title">기존 리허설 기록 다시 열기</h2>
+        <p>서버 재시작 뒤에도 기존 기록을 선택할 수 있습니다. 새 동의 기록은 만들지 않습니다.</p>
+        <ul id="record-list" class="record-list"></ul>
+        <form id="restore-code-form" class="restore-code-form">
+          <label for="restore-record-id">기록 코드로 다시 열기</label>
+          <input id="restore-record-id" type="text" inputmode="text" autocomplete="off" maxlength="36" pattern="[0-9a-fA-F-]{36}" aria-describedby="restore-code-help">
+          <p id="restore-code-help" class="field-help">본인이 보관한 기록 UUID를 입력하세요. 코드는 저장하거나 주소에 넣지 않습니다.</p>
+          <button class="secondary-button" type="submit">기록 코드로 열기</button>
+        </form>
+      </section>
+
+      <section id="session-panel" class="panel" aria-labelledby="session-title" hidden>
+        <div class="panel-heading">
+          <div><h2 id="session-title">리허설 진행</h2><p id="record-summary" class="muted"></p></div>
+          <button id="copy-code-button" class="secondary-button" type="button" hidden>기록 코드 복사</button>
+        </div>
+        <p id="expiry-line" class="muted"></p>
+        <div id="begin-task-panel" class="timer-box" hidden>
+          <p>동의 기록이 준비됐습니다. 아래 버튼을 누르면 사례를 공개하고 그 순간부터 시간을 측정합니다.</p>
+          <button id="begin-task-button" class="primary-button" type="button">사례 공개하고 과제 시작</button>
+        </div>
+        <div id="timer-panel" class="timer-box" hidden>
+          <p><strong>주 과업 경과 시간</strong> <span id="timer-value" aria-live="off">00:00</span></p>
+          <p id="timer-help">사례 공개부터 첫 카드 표시까지 측정합니다. 카드가 표시되면 자동으로 멈춥니다.</p>
+          <button id="stop-task-button" class="primary-button" type="button">과제 중단</button>
+        </div>
+        <div id="lost-timer-panel" class="recovery-box" hidden>
+          <h3>타이머 상태를 복구해야 합니다</h3>
+          <p>페이지를 다시 열어 시작 시각을 확인할 수 없습니다. 실제로 측정한 초를 입력해 저장하거나, 과제를 명시적으로 다시 시작하세요. 시간을 추정해 입력하지 마세요.</p>
+          <form id="manual-timing-form">
+            <label for="manual-seconds">실측 경과 시간 (초, 0–360)</label>
+            <input id="manual-seconds" type="number" min="0" max="360" step="1" required>
+            <label class="checkbox-row"><input id="manual-card-displayed" type="checkbox"> 카드가 표시된 것을 직접 확인했습니다.</label>
+            <button class="primary-button" type="submit">실측 시간 저장</button>
+          </form>
+          <button id="restart-task-button" class="secondary-button" type="button">과제 다시 시작</button>
+        </div>
+        <section id="task-region" class="task-region" hidden aria-labelledby="scenario-title">
+          <h3 id="scenario-title">가상 사례</h3>
+          <p id="scenario-text"></p>
+          <p>사례의 사실만 선택하세요. 실제 개인정보를 입력하지 마세요.</p>
+          <iframe id="card-frame" title="가상 사례 준비 카드" src="about:blank" loading="eager"></iframe>
+        </section>
+        <p id="session-status" class="status" role="status" aria-live="polite"></p>
+        <button id="withdraw-button" class="danger-button" type="button">기록 철회 및 삭제</button>
+      </section>
+
+      <section id="observation-panel" class="panel" aria-labelledby="observation-title" hidden>
+        <h2 id="observation-title">코드형 관찰 기록</h2>
+        <p>자유기술 입력은 저장하지 않습니다. 모르는 항목은 기본값인 ‘관찰하지 않음’으로 두세요. 과업 시간은 카드 표시 여부와 관계없이 실제 경과 시간을 기록합니다.</p>
+        <form id="observation-form">
+          <label for="task-status">과업 상태</label>
+          <select id="task-status" name="task_status"></select>
+          <label for="help-requested">과업 중 도움 요청</label>
+          <select id="help-requested" name="help_requested_during_task"></select>
+          <label for="content-help">과업 내용 도움 제공</label>
+          <select id="content-help" name="content_help_during_task"></select>
+          <label for="technical-issue">기술 문제 관찰</label>
+          <select id="technical-issue" name="technical_issue_during_task"></select>
+          <label for="stuck-count">막힘 횟수</label>
+          <input id="stuck-count" name="stuck_event_count_during_task" type="number" min="0" max="100" step="1">
+          <p id="stuck-help" class="field-help">과업을 실행하지 않은 경우 비워 두세요. 그 외에는 실제 관찰한 횟수를 입력하세요.</p>
+          <label for="next-action">다음 행동 이해 관찰</label>
+          <select id="next-action" name="next_action_comprehension_post_task"></select>
+          <label for="source-understanding">출처 링크와 확인일 위치 이해 관찰</label>
+          <select id="source-understanding" name="source_link_date_location_comprehension_post_task"></select>
+          <label for="list-understanding">자료 목록 의미 이해 관찰</label>
+          <select id="list-understanding" name="preparation_list_meaning_comprehension_post_task"></select>
+          <label for="limits-understanding">카드의 범위 이해 관찰</label>
+          <select id="limits-understanding" name="card_limits_comprehension_post_task"></select>
+          <label for="critical-misunderstanding">중요 오해 관찰</label>
+          <select id="critical-misunderstanding" name="critical_misunderstanding_observed"></select>
+          <label for="critical-phase">중요 오해가 나타난 시점</label>
+          <select id="critical-phase" name="critical_misunderstanding_phase"></select>
+          <label for="sensitive-data">민감 정보 취급 상태</label>
+          <select id="sensitive-data" name="sensitive_data_handling_status"></select>
+          <label for="recording-status">녹음 상태</label>
+          <select id="recording-status" name="recording_status"><option value="not_recorded">녹음하지 않음</option></select>
+          <p id="elapsed-summary" class="field-help"></p>
+          <div class="actions">
+            <button id="save-observation-button" class="primary-button" type="submit" disabled>관찰 기록 저장</button>
+          </div>
+        </form>
+        <p id="observation-status" class="status" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+    <footer><p>리허설 데이터는 개발자가 보고한 상태이며, 참가자 조사나 법률·금융 품질 검증을 뜻하지 않습니다.</p></footer>
+  </main>
+</body>
+</html>

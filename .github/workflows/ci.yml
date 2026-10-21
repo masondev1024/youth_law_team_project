@@ -7,9 +7,16 @@ on:
     branches: [main, dev]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      RAG_BACKEND: stub
+      AWS_EC2_METADATA_DISABLED: "true"
     steps:
       - uses: actions/checkout@v4
 

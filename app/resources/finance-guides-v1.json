@@ -1,0 +1,419 @@
+{
+  "version": "finance-first-consult-v2.1-20261020",
+  "checked_on": "2026-10-20",
+  "review_status": "official_pages_checked",
+  "professional_review": "not_performed",
+  "freshness_note": "30일은 제품 내부의 원문 재확인 주기이며 공식기관의 요구사항·법정 기한·내용의 유효성 보증이 아닙니다.",
+  "topics": [
+    {
+      "id": "repayment",
+      "label": "갚는 부담이 커졌어요",
+      "description": "다가오는 상환일과 납부 상태를 정리하고, 처음 문의할 상담 창구를 알아봅니다."
+    },
+    {
+      "id": "collection",
+      "label": "상환요구 연락을 받았어요",
+      "description": "누가 어떤 내용으로 연락했는지 정리하고, 확인할 내용과 상담 질문을 준비합니다."
+    },
+    {
+      "id": "procedure",
+      "label": "채무조정/개인회생을 잘 모르겠어요",
+      "description": "서로 다른 제도와 절차를 혼동하지 않도록, 비교 상담에 필요한 내용을 정리합니다."
+    }
+  ],
+  "facts": [
+    {
+      "id": "income_decreased",
+      "label": "수입이 줄었거나 불규칙해졌어요",
+      "topic_ids": [
+        "repayment",
+        "procedure"
+      ]
+    },
+    {
+      "id": "payment_due",
+      "label": "대출이나 카드 납부일이 다가와요",
+      "topic_ids": [
+        "repayment"
+      ]
+    },
+    {
+      "id": "not_overdue",
+      "label": "아직 연체되지는 않았어요",
+      "topic_ids": [
+        "repayment",
+        "procedure"
+      ]
+    },
+    {
+      "id": "overdue",
+      "label": "정해진 납부일이 지나 납부가 늦어졌어요",
+      "topic_ids": [
+        "repayment",
+        "collection",
+        "procedure"
+      ]
+    },
+    {
+      "id": "collection_contact",
+      "label": "상환을 요구하는 전화나 문자를 받았어요",
+      "topic_ids": [
+        "collection"
+      ]
+    },
+    {
+      "id": "caller_unclear",
+      "label": "연락 업체와 원래 금융회사의 관계를 모르겠어요",
+      "topic_ids": [
+        "collection"
+      ]
+    },
+    {
+      "id": "repeated_contact",
+      "label": "같은 날 연락을 여러 번 받았어요",
+      "topic_ids": [
+        "collection"
+      ]
+    },
+    {
+      "id": "records_unorganized",
+      "label": "청구 내역이나 연락 기록을 아직 정리하지 않았어요",
+      "topic_ids": [
+        "repayment",
+        "collection",
+        "procedure"
+      ]
+    },
+    {
+      "id": "first_consultation",
+      "label": "관련 상담을 받아본 적이 없어요",
+      "topic_ids": [
+        "repayment",
+        "collection",
+        "procedure"
+      ]
+    },
+    {
+      "id": "procedure_unclear",
+      "label": "채무조정과 개인회생이 어떻게 다른지 모르겠어요",
+      "topic_ids": [
+        "procedure"
+      ]
+    },
+    {
+      "id": "working",
+      "label": "현재 일을 하고 있어요",
+      "topic_ids": [
+        "repayment",
+        "procedure"
+      ]
+    },
+    {
+      "id": "multiple_payments",
+      "label": "갚아야 할 대출이나 카드 항목이 여러 개예요",
+      "topic_ids": [
+        "repayment",
+        "procedure"
+      ]
+    }
+  ],
+  "mutually_exclusive_fact_groups": [
+    [
+      "not_overdue",
+      "overdue"
+    ]
+  ],
+  "sources": [
+    {
+      "id": "kinfa-integrated-center",
+      "title": "센터 소개 > 서민금융통합지원센터",
+      "url": "https://www.kinfa.or.kr/counselingSupport/centerIntroduction.do",
+      "organization": "서민금융진흥원",
+      "checked_on": "2026-10-20",
+      "review_kind": "official_page_check",
+      "verified": true,
+      "published_on": null,
+      "evidence_excerpt": "방문 목적 확인, 기초상담 실시 서류 안내, 작성 지원",
+      "scope_limits": [
+        "The page does not establish that a particular person qualifies for a debt adjustment, loan, or other benefit.",
+        "The listed document guidance is provided during the center process; the page does not publish a universal mandatory first-consultation checklist.",
+        "Do not promise that an initial consultation will result in debt relief or a court referral."
+      ],
+      "retrieved_body_sha256": "a238d4428293715e7616f1b386fbdb6c5552e34b30620f6e37e19df469dac863",
+      "hash_note": "2026-10-20에 새로 보관한 HTTP 응답 바이트의 지문입니다. 과거 원문 복원·전문가 승인·법률 정확성 보증을 뜻하지 않습니다."
+    },
+    {
+      "id": "ccrs-debt-procedure-comparison",
+      "title": "채무조정제도 비교",
+      "url": "https://edu.ccrs.or.kr/cms/com/index.do?MENU_ID=490",
+      "organization": "신용회복위원회",
+      "checked_on": "2026-10-20",
+      "review_kind": "official_page_check",
+      "verified": true,
+      "published_on": null,
+      "evidence_excerpt": "신용회복위원회 ... 법원 ... 개인회생 ... 개인파산",
+      "scope_limits": [
+        "The page contains detailed eligibility thresholds and financial parameters. Do not copy these into the card as current universal rules without specialist review and fresh validation.",
+        "A category comparison does not determine which process applies to the fictional person or predict approval, repayment, discharge, or relief.",
+        "The compared program set and rules can change; confirm at the relevant institution."
+      ],
+      "retrieved_body_sha256": "6e7a3195eedf2a93b4f8710d2134b1e9004a5d9062a70e3fb567462f552d5e38",
+      "hash_note": "2026-10-20에 새로 보관한 HTTP 응답 바이트의 지문입니다. 과거 원문 복원·전문가 승인·법률 정확성 보증을 뜻하지 않습니다."
+    },
+    {
+      "id": "kinfa-collection-verification",
+      "title": "소멸시효 완성채권 추심 관련 금융소비자 유의사항",
+      "url": "https://www.kinfa.or.kr/financialLife/limitationNoteStatue.do",
+      "organization": "서민금융진흥원",
+      "checked_on": "2026-10-20",
+      "review_kind": "official_page_check",
+      "verified": true,
+      "published_on": null,
+      "evidence_excerpt": "채권자, 채권추심인 및 채무사실 등이 정확한지 확인",
+      "scope_limits": [
+        "This consumer guidance page does not establish that the fictional contacts are unlawful, fraudulent, or invalid.",
+        "The page discusses limitation-related issues as well; do not apply limitation periods or tell a person to stop paying based only on the card.",
+        "Exact rights and next steps depend on documents and facts that are not present in the scenario."
+      ],
+      "retrieved_body_sha256": "67a9729cc286943c52d9e12e15eea0bbb459e587a4149a1e576cb63a7e6375da",
+      "hash_note": "2026-10-20에 새로 보관한 HTTP 응답 바이트의 지문입니다. 과거 원문 복원·전문가 승인·법률 정확성 보증을 뜻하지 않습니다."
+    },
+    {
+      "id": "klac-general-legal-counseling",
+      "title": "법률상담 알아보기",
+      "url": "https://www.klac.or.kr/legalstruct/consultationGuidance.do",
+      "organization": "대한법률구조공단",
+      "checked_on": "2026-10-20",
+      "review_kind": "official_page_check",
+      "verified": true,
+      "published_on": null,
+      "evidence_excerpt": "손해배상, 계약 등 민사소송 ... 간단 상담이 필요한 고객",
+      "scope_limits": [
+        "The page explicitly names civil lawsuits generally, but does not specifically name debt collection or collection-contact disputes as a consultation category. The card must state this and ask the agency whether the specific matter fits.",
+        "The page does not determine whether the collector’s conduct is unlawful, whether a particular case will be accepted, or whether the person qualifies for legal-aid representation.",
+        "Counseling is described as an opinion based on customer-provided materials and reference material in a dispute, not a guaranteed legal outcome."
+      ],
+      "retrieved_body_sha256": "549a7b16c5391d7fd5ee3590c2285929a41faa3c5376c468524be5090fda6129",
+      "hash_note": "2026-10-20에 새로 보관한 HTTP 응답 바이트의 지문입니다. 과거 원문 복원·전문가 승인·법률 정확성 보증을 뜻하지 않습니다."
+    }
+  ],
+  "issues": {
+    "repayment": {
+      "official_route": {
+        "source_id": "kinfa-integrated-center",
+        "organization": "서민금융통합지원센터",
+        "url": "https://www.kinfa.or.kr/counselingSupport/centerIntroduction.do",
+        "purpose": "센터는 방문 목적을 확인하고 기초상담과 서류 안내·작성 지원 절차를 소개합니다. 참여기관마다 지원 내용이 다르므로, 어느 창구에 문의할지와 필요한 자료를 먼저 확인해 보세요."
+      },
+      "to_confirm": [
+        {
+          "id": "repayment-status",
+          "text": "어느 금융회사에 어떤 항목을 갚고 있는지, 각 상환일과 실제 납부 상태를 확인해 보세요.",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "repayment-budget",
+          "text": "최근 수입·고정지출의 변화와 감당하기 어려운 부분을 상담에서 설명할 수 있도록 확인해 보세요.",
+          "kind": "service_suggestion"
+        }
+      ],
+      "preparation_items": [
+        {
+          "id": "repayment-statements",
+          "text": "이미 가지고 있다면 대출·카드 안내문이나 최근 청구 내역",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "repayment-dates",
+          "text": "확인할 수 있는 항목별 상환일과 납부 상태의 간단한 메모",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "repayment-income-note",
+          "text": "설명할 수 있는 범위에서 최근 수입 변화와 고정지출을 적은 메모",
+          "kind": "service_suggestion"
+        }
+      ],
+      "counselor_questions": [
+        {
+          "id": "repayment-first-route",
+          "text": "현재 납부 상태에서 어느 상담 창구에 먼저 문의하면 좋을까요?",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "repayment-options",
+          "text": "제 상황에서 비교할 상담·지원 경로와 추가로 확인할 정보는 무엇인가요?",
+          "kind": "service_suggestion"
+        }
+      ],
+      "uncertainties": [
+        {
+          "id": "repayment-eligibility",
+          "text": "이 카드만으로 지원 대상, 채무조정 가능 여부나 감면 결과가 확인되지는 않습니다.",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "repayment-documents",
+          "text": "이 자료들은 상담에 도움이 될 후보이며 필수 제출서류 목록이 아닙니다. 실제 필요한 자료는 문의할 창구에서 확인하세요.",
+          "kind": "service_suggestion"
+        }
+      ],
+      "source_ids": [
+        "kinfa-integrated-center"
+      ]
+    },
+    "collection": {
+      "official_route": {
+        "source_id": "klac-general-legal-counseling",
+        "organization": "대한법률구조공단 일반 법률상담",
+        "url": "https://www.klac.or.kr/legalstruct/consultationGuidance.do",
+        "purpose": "공단은 민사 문제 등의 법률상담 방법을 안내합니다. 이 추심 사안을 상담할 수 있는지와 상담 전에 정리할 내용을 먼저 문의해 보세요."
+      },
+      "to_confirm": [
+        {
+          "id": "collection-identity",
+          "text": "서민금융진흥원은 ‘소멸시효 완성채권 추심’ 안내에서, 추심착수 예정통지의 채권자·추심인·채무 사실을 확인하도록 설명합니다. 이번 사례에 적용되는지는 확인이 필요합니다.",
+          "kind": "official_guidance",
+          "source_id": "kinfa-collection-verification"
+        },
+        {
+          "id": "collection-records",
+          "text": "이미 받은 연락의 날짜·시각, 표시된 업체명과 대화 요지를 확인할 수 있는 만큼 정리해 보세요.",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "collection-scope",
+          "text": "이 창구에서 해당 추심 사안을 상담할 수 있는지 먼저 확인하세요. 일반 상담 안내가 모든 사안의 상담·수임을 보장하지는 않습니다.",
+          "kind": "service_suggestion"
+        }
+      ],
+      "preparation_items": [
+        {
+          "id": "collection-notices",
+          "text": "이미 받은 안내 문자·우편·청구서가 있다면 그 자료",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "collection-timeline",
+          "text": "확인할 수 있는 연락 날짜·시각·업체명·대화 요지의 메모",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "collection-original",
+          "text": "이미 가지고 있다면 원래 금융회사의 대출·청구 안내 자료",
+          "kind": "service_suggestion"
+        }
+      ],
+      "counselor_questions": [
+        {
+          "id": "collection-confirmation",
+          "text": "연락한 업체의 역할과 채무 사실을 확인하려면 어떤 자료를 요청할 수 있나요?",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "collection-contact",
+          "text": "연락 방식에 문제가 있는지 상담하려면 어떤 사실과 자료를 더 확인해야 하나요?",
+          "kind": "service_suggestion"
+        }
+      ],
+      "uncertainties": [
+        {
+          "id": "collection-legality",
+          "text": "업체 이름이 다르거나 연락이 잦다는 사실만으로 불법·사기라고 판단하지 않습니다.",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "collection-payment",
+          "text": "이 카드로 납부 중단이나 채무의 유효성·소멸시효를 판단하지 않습니다. 실제 조치는 공식 상담에서 확인하세요.",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "collection-source-scope",
+          "text": "아래 서민금융진흥원 자료는 소멸시효 완성채권의 추심을 다룹니다. 이번 사례가 그 범위에 해당하는지는 확인되지 않았습니다.",
+          "kind": "service_suggestion"
+        }
+      ],
+      "source_ids": [
+        "klac-general-legal-counseling",
+        "kinfa-collection-verification"
+      ]
+    },
+    "procedure": {
+      "official_route": {
+        "source_id": "kinfa-integrated-center",
+        "organization": "서민금융통합지원센터",
+        "url": "https://www.kinfa.or.kr/counselingSupport/centerIntroduction.do",
+        "purpose": "센터는 기초상담과 참여기관 연계를 안내합니다. 어느 기관에 문의할지, 절차를 비교하려면 어떤 정보를 정리해야 할지 먼저 물어볼 수 있습니다."
+      },
+      "to_confirm": [
+        {
+          "id": "procedure-difference",
+          "text": "신용회복위원회 비교표는 위원회 채무조정과 법원의 개인회생·개인파산을 구분해 소개합니다.",
+          "kind": "official_guidance",
+          "source_id": "ccrs-debt-procedure-comparison"
+        },
+        {
+          "id": "procedure-finances",
+          "text": "채무별 금융회사·납부 상태와 소득·고용 상태 중 아직 정리하지 못한 내용을 확인해 보세요.",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "procedure-missing",
+          "text": "자산·지출 등 어떤 정보를 더 확인해야 절차를 비교할 수 있는지 상담 담당자에게 물어보세요.",
+          "kind": "service_suggestion"
+        }
+      ],
+      "preparation_items": [
+        {
+          "id": "procedure-statements",
+          "text": "이미 가지고 있다면 금융회사별 최근 청구·잔액 안내 자료",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "procedure-income",
+          "text": "설명할 수 있는 범위에서 현재 소득·고용 상태를 정리한 메모",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "procedure-budget",
+          "text": "확인할 수 있는 월 지출과 보유 자산의 메모",
+          "kind": "service_suggestion"
+        }
+      ],
+      "counselor_questions": [
+        {
+          "id": "procedure-compare",
+          "text": "채무조정과 법원 개인회생을 비교하려면 어떤 사실부터 확인해야 하나요?",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "procedure-next",
+          "text": "각 절차의 상담 창구와 준비 자료는 무엇이며, 신청 자격은 어디서 별도로 확인하나요?",
+          "kind": "service_suggestion"
+        }
+      ],
+      "uncertainties": [
+        {
+          "id": "procedure-not-selected",
+          "text": "이 비교만으로 개인에게 맞는 절차나 신청 가능 여부가 정해지지는 않습니다. 각 기관에서 현재 조건을 확인해야 합니다.",
+          "kind": "service_suggestion"
+        },
+        {
+          "id": "procedure-results",
+          "text": "서로 다른 절차의 조건을 섞어 적용하지 않습니다. 개인별 자격·비용·상환 및 면책 결과는 추가 확인이 필요합니다.",
+          "kind": "service_suggestion"
+        }
+      ],
+      "source_ids": [
+        "kinfa-integrated-center",
+        "ccrs-debt-procedure-comparison"
+      ]
+    }
+  },
+  "source_comparison": {
+    "kind": "engineering_source_to_card_comparison",
+    "professional_review": "not_performed",
+    "captured_on": "2026-10-20",
+    "note": "새로 보관한 공식 응답과 안내 문구의 범위를 대조했습니다. 법률 적용·자격·기관의 사안 수락 여부를 판단한 것은 아닙니다."
+  }
+}

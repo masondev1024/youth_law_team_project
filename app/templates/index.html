@@ -28,6 +28,7 @@
       <button class="chip" onclick="askWith('전세 보증금을 안 돌려줘요')">전세 보증금을 안 돌려줘요</button>
       <button class="chip" onclick="askWith('인터넷으로 산 옷을 환불하고 싶어요')">인터넷으로 산 옷을 환불하고 싶어요</button>
       <button class="chip" onclick="askWith('대출 독촉 전화가 와요')">대출 독촉 전화가 와요</button>
+      <a class="chip" href="/prepare">금융 첫 상담 준비하기</a>
     </div>
     <div class="trust-row">
       <span class="trust-item"><span class="dot"></span>국가법령정보센터 현행 법령</span>
@@ -529,6 +530,7 @@ function renderTurn(data, turnIdx, q) {
         </div>
       </section>
 
+      ${b.domain === 'finance' ? '<p><a class="btn btn-outline" href="/prepare">첫 상담 준비 카드 정리하기</a></p>' : ''}
       <button class="btn btn-outline" onclick="makeDraft('${key}', '${b.domain}', ${JSON.stringify(dq).replace(/"/g, "&quot;")})">
         <svg class="ic-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/><path d="M14 3v5h5M9 13h6M9 16h4"/></svg>
         ${b.domain_kr} 문서 초안 생성</button>
