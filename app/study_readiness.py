@@ -75,13 +75,25 @@ def _parse_json(raw: bytes) -> Any:
         raise AuditInputError("non_finite_json_number")
 
     try:
-        return json.loads(
+        value = json.loads(
             raw.decode("utf-8"),
             object_pairs_hook=_no_duplicate_keys,
             parse_constant=reject_non_finite,
         )
     except (UnicodeDecodeError, json.JSONDecodeError, RecursionError) as exc:
         raise AuditInputError("invalid_json") from exc
+    # Python versions have different JSON recursion thresholds. Keep the
+    # admission contract explicit instead of depending on interpreter limits.
+    pending = [(value, 0)]
+    while pending:
+        item, depth = pending.pop()
+        if depth > 64:
+            raise AuditInputError("invalid_json")
+        if isinstance(item, dict):
+            pending.extend((child, depth + 1) for child in item.values())
+        elif isinstance(item, list):
+            pending.extend((child, depth + 1) for child in item)
+    return value
 
 
 def _is_hash(value: Any) -> bool:
@@ -282,7 +294,8 @@ def _check_evidence(
         valid_keys = isinstance(keys, list) and len(keys) == 6
         if valid_keys:
             key_case_ids = [
-                key.get("case_id") for key in keys
+                key.get("case_id")
+                for key in keys
                 if isinstance(key, dict) and _nonempty_string(key, "key")
             ]
             valid_keys = key_case_ids == case_ids
@@ -304,8 +317,7 @@ def _check_evidence(
             isinstance(raters, list)
             and len(raters) == 2
             and all(
-                isinstance(rater, dict) and isinstance(rater.get("slot"), str)
-                for rater in raters
+                isinstance(rater, dict) and isinstance(rater.get("slot"), str) for rater in raters
             )
         )
         if valid:

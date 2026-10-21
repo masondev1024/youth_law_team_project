@@ -59,6 +59,7 @@ _REQUEST_KEY = re.compile(
     r"([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$"
 )
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
+_SQLITE_JOURNAL_MAGIC = bytes.fromhex("d9d505f920a163d7")
 
 
 def _utc_now() -> datetime:
@@ -103,6 +104,8 @@ class ParticipantStudyStore:
         clock: Callable[[], datetime] = _utc_now,
         _allow_ledger_bootstrap: bool = False,
         _defer_recovery: bool = False,
+        remote_authority=None,
+        _initial_dataset_id: str | None = None,
     ):
         self.root = Path(root)
         if not isinstance(notice_sha256, str) or not _SHA256.fullmatch(notice_sha256):
@@ -126,7 +129,15 @@ class ParticipantStudyStore:
         self.marker = self.runtime / _MARKER_NAME
         self.lock_path = self.runtime / _LOCK_NAME
         self.service_lock_path = self.runtime / _SERVICE_LOCK_NAME
+        if _initial_dataset_id is not None and (
+            not _is_uuid4(_initial_dataset_id)
+            or self.runtime.exists()
+            or _defer_recovery
+        ):
+            raise StudyStorageError("invalid_configuration")
+        self._initial_dataset_id = _initial_dataset_id
         self._allow_ledger_bootstrap = _allow_ledger_bootstrap
+        self.remote_authority = remote_authority
         self._skip_ledger_reconcile = True
         self.ledger: ParticipantDeletionLedger | None = None
         self._bootstrap_mode = _allow_ledger_bootstrap
@@ -227,7 +238,9 @@ class ParticipantStudyStore:
             _check_mode(self.runtime)
             _check_no_acl(self.runtime)
             if fresh_namespace:
-                self.marker_data["dataset_id"] = str(uuid.uuid4())
+                self.marker_data["dataset_id"] = (
+                    self._initial_dataset_id or str(uuid.uuid4())
+                )
                 fd = os.open(self.marker, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
                 with os.fdopen(fd, "w", encoding="ascii") as stream:
                     json.dump(self.marker_data, stream, sort_keys=True, separators=(",", ":"))
@@ -304,6 +317,7 @@ class ParticipantStudyStore:
                     connection.commit()
                     self._audit_locked(connection)
             dataset_fingerprint = ParticipantDeletionLedger.fingerprint(self.marker_data)
+            self._validate_remote_authority(dataset_fingerprint)
             ledger_path = self.root / "participant-deletions-v1"
             if fresh_namespace:
                 self.ledger = ParticipantDeletionLedger(
@@ -483,6 +497,20 @@ class ParticipantStudyStore:
             self.root,
             ParticipantDeletionLedger.fingerprint(self.marker_data),
         )
+        self._validate_remote_authority(self.ledger.dataset_fingerprint)
+
+    def _validate_remote_authority(self, dataset_fingerprint: str) -> None:
+        """Pin an optional cloud deletion authority to this exact dataset."""
+        authority = self.remote_authority
+        if authority is None:
+            return
+        if (
+            getattr(authority, "dataset_fingerprint", None) != dataset_fingerprint
+            or not callable(getattr(authority, "assert_current", None))
+            or not callable(getattr(authority, "append", None))
+            or not callable(getattr(authority, "snapshot", None))
+        ):
+            raise StudyStorageError("wrong_dataset")
 
     def _locked(self):
         return _StoreLock(self.lock_path, self._validate_runtime)
@@ -530,6 +558,9 @@ class ParticipantStudyStore:
             raise StudyStorageError("invalid_ledger")
         now = self._now()
         entries, _ = self.ledger.verified_entries()
+        if self.remote_authority is not None:
+            self._merge_remote_intents_locked(entries, now)
+            entries, _ = self.ledger.verified_entries()
         active: dict[str, str] = {}
         for entry in entries:
             expires = _parse_time(entry["expires_at"])
@@ -544,10 +575,186 @@ class ParticipantStudyStore:
             )
         connection.commit()
 
+    def _merge_remote_intents_locked(self, local_entries=None, now=None):
+        """Durably merge current remote intents into the local accident guard.
+
+        A local active intent absent remotely signals an authority mismatch and
+        fails closed. Remote intents are journaled locally before any database
+        deletion, so a crash can replay them safely on the next operation.
+        """
+        if self.remote_authority is None:
+            return None
+        if self.ledger is None:
+            raise StudyStorageError("invalid_ledger")
+        now = self._now() if now is None else now
+        self.remote_authority.assert_current()
+        intents, highwater = self.remote_authority.snapshot()
+        if (
+            type(highwater) is not int
+            or not 0 <= highwater <= _STORAGE_ROW_CEILING
+            or not isinstance(intents, list)
+        ):
+            raise StudyStorageError("invalid_authority")
+        if local_entries is None:
+            local_entries, _ = self.ledger.verified_entries()
+        remote_by_hash: dict[str, str] = {}
+        sequences: set[int] = set()
+        for intent in intents:
+            request_hash = getattr(intent, "request_key_hash", None)
+            expires_at = getattr(intent, "expires_at", None)
+            sequence = getattr(intent, "sequence", None)
+            if not isinstance(request_hash, str) or not _SHA256.fullmatch(request_hash):
+                raise StudyStorageError("invalid_authority")
+            if type(sequence) is not int or not 1 <= sequence <= highwater or sequence in sequences:
+                raise StudyStorageError("invalid_authority")
+            sequences.add(sequence)
+            try:
+                canonical_expiry = _iso(_parse_time(expires_at))
+            except StudyStorageError as exc:
+                raise StudyStorageError("invalid_authority") from exc
+            if not isinstance(expires_at, str) or canonical_expiry != expires_at:
+                raise StudyStorageError("invalid_authority")
+            prior = remote_by_hash.get(request_hash)
+            if prior is not None and prior != expires_at:
+                raise StudyStorageError("invalid_authority")
+            remote_by_hash[request_hash] = expires_at
+        if (
+            len(intents) != highwater
+            or len(remote_by_hash) != len(intents)
+            or sequences != set(range(1, highwater + 1))
+        ):
+            raise StudyStorageError("invalid_authority")
+
+        local_by_hash = {entry["request_key_hash"]: entry["expires_at"] for entry in local_entries}
+        active_local = {
+            request_hash: expires_at
+            for request_hash, expires_at in local_by_hash.items()
+            if _parse_time(expires_at) > now
+        }
+        for request_hash, expires_at in active_local.items():
+            if remote_by_hash.get(request_hash) != expires_at:
+                raise StudyStorageError("authority_mismatch")
+
+        for intent in intents:
+            if _parse_time(intent.expires_at) <= now:
+                continue
+            local_expiry = local_by_hash.get(intent.request_key_hash)
+            if local_expiry is None:
+                self.ledger.append(intent.request_key_hash, intent.expires_at, now)
+            elif local_expiry != intent.expires_at:
+                raise StudyStorageError("authority_mismatch")
+        return (tuple((i.request_key_hash, i.expires_at, i.sequence) for i in intents), highwater)
+
+    def _recover_cold_journal_locked(self, connection: sqlite3.Connection) -> None:
+        """Ask SQLite to remove an inert rollback journal after validating the DB.
+
+        A process killed during a transaction can leave SQLite's rollback journal
+        with its header zeroed after rollback. It is no longer hot, but SQLite
+        may retain the file after a read-only audit. The runtime file contract
+        rejects journals, so perform a value-preserving write through SQLite
+        while the caller holds the store operation lock. Never unlink journals
+        directly: SQLite must decide whether the file is safe to remove.
+        """
+        journal = self.runtime / f"{_DATABASE_NAME}-journal"
+        if not journal.exists():
+            return
+
+        info = self._validate_file(journal)
+        if info.st_size <= 512:
+            raise StudyStorageError("invalid_journal")
+        try:
+            flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+            fd = os.open(journal, flags)
+            try:
+                opened = os.fstat(fd)
+                header = os.read(fd, 8)
+            finally:
+                os.close(fd)
+        except OSError as exc:
+            raise StudyStorageError("unsafe_file") from exc
+        if (
+            not stat.S_ISREG(opened.st_mode)
+            or opened.st_dev != info.st_dev
+            or opened.st_ino != info.st_ino
+            or opened.st_uid != os.getuid()
+            or stat.S_IMODE(opened.st_mode) != 0o600
+            or header != b"\0" * 8
+        ):
+            # A non-zero or malformed journal is not an inert artifact. SQLite
+            # should have recovered or rejected it while opening the database.
+            raise StudyStorageError("invalid_journal")
+
+        # Validate all persisted state before issuing a write. The no-op update
+        # forces SQLite's rollback-mode pager to complete cleanup using its own
+        # commit protocol without changing the stable dataset binding.
+        self._audit_locked(connection)
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            cursor = connection.execute(
+                "UPDATE dataset_binding SET dataset_id=dataset_id WHERE dataset_id=?",
+                (self.marker_data["dataset_id"],),
+            )
+            if cursor.rowcount != 1:
+                connection.rollback()
+                raise StudyStorageError("wrong_dataset")
+            connection.commit()
+        except StudyStorageError:
+            raise
+        except sqlite3.Error as exc:
+            connection.rollback()
+            raise StudyStorageError("database_error") from exc
+
+        if journal.exists():
+            raise StudyStorageError("invalid_journal")
+        self._validate_runtime(allow_journal=False)
+
+    def _validate_journal_before_open(self) -> None:
+        """Reject malformed journal headers before SQLite can discard them."""
+        journal = self.runtime / f"{_DATABASE_NAME}-journal"
+        if not journal.exists():
+            return
+        info = self._validate_file(journal)
+        if info.st_size <= 512:
+            raise StudyStorageError("invalid_journal")
+        try:
+            fd = os.open(journal, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+            try:
+                opened = os.fstat(fd)
+                header = os.read(fd, 28)
+            finally:
+                os.close(fd)
+        except OSError as exc:
+            raise StudyStorageError("unsafe_file") from exc
+        if (
+            not stat.S_ISREG(opened.st_mode)
+            or opened.st_dev != info.st_dev
+            or opened.st_ino != info.st_ino
+            or opened.st_uid != os.getuid()
+            or stat.S_IMODE(opened.st_mode) != 0o600
+        ):
+            raise StudyStorageError("unsafe_file")
+        if header[:8] == b"\0" * 8:
+            return
+        if len(header) != 28 or header[:8] != _SQLITE_JOURNAL_MAGIC:
+            raise StudyStorageError("invalid_journal")
+        sector_size = int.from_bytes(header[20:24], "big")
+        page_size = int.from_bytes(header[24:28], "big")
+        if (
+            sector_size < 512
+            or sector_size > 65536
+            or sector_size & (sector_size - 1)
+            or page_size < 512
+            or page_size > 65536
+            or page_size & (page_size - 1)
+            or info.st_size < sector_size
+        ):
+            raise StudyStorageError("invalid_journal")
+
     @contextmanager
     def _connect_locked(self) -> Iterator[sqlite3.Connection]:
         """Open a fresh, guarded connection and verify durability settings."""
         self._validate_runtime()
+        self._validate_journal_before_open()
         connection: sqlite3.Connection | None = None
         try:
             connection = sqlite3.connect(
@@ -573,6 +780,7 @@ class ParticipantStudyStore:
             if not self._skip_ledger_reconcile:
                 self._audit_locked(connection)
                 self._reconcile_ledger_locked(connection)
+            self._recover_cold_journal_locked(connection)
             yield connection
             connection.close()
             connection = None
@@ -935,7 +1143,13 @@ class ParticipantStudyStore:
                 if self.ledger is None:
                     connection.rollback()
                     raise StudyStorageError("invalid_ledger")
-                self.ledger.append(row["request_key_hash"], row["expires_at"], self._now())
+                now = self._now()
+                if self.remote_authority is not None:
+                    # The cloud intent is the recovery authority. Never remove
+                    # the row or acknowledge withdrawal until that write and
+                    # the local journal append have both been confirmed.
+                    self.remote_authority.append(row["request_key_hash"], row["expires_at"])
+                self.ledger.append(row["request_key_hash"], row["expires_at"], now)
                 connection.execute("DELETE FROM records WHERE record_id=?", (record_id,))
                 connection.commit()
                 return True

@@ -1,0 +1,118 @@
+{
+  "schema": "youth-law-cloud-rehearsal-evidence.v1",
+  "recorded_at": "2026-10-21T05:01:56+00:00",
+  "scope": "합성 자료만 사용한 비공개 개발자 리허설",
+  "real_participants": 0,
+  "expert_review": "pending",
+  "external_model_calls_in_this_run": 0,
+  "public_site_updated": false,
+  "results": {
+    "local_tests": {
+      "passed": 408,
+      "warnings": 5,
+      "ruff": "pass"
+    },
+    "python312_focused_tests": {
+      "passed": 100,
+      "warnings": 1
+    },
+    "http_flows": {
+      "warm": {
+        "checks": 20,
+        "requests": 29
+      },
+      "cold": {
+        "checks": 20,
+        "requests": 29
+      },
+      "replacement": {
+        "checks": 20,
+        "requests": 29
+      }
+    },
+    "cold_start_observation": {
+      "previous_invocation_ms": 5868.09,
+      "previous_http_status": 503,
+      "retest_invocation_ms": 2789.76,
+      "retest_init_ms": 98.96,
+      "memory_mib": 256,
+      "single_observation_joint_changes": true
+    },
+    "recovery": {
+      "scope": "one synthetic developer rehearsal host replacement",
+      "status": "pass",
+      "recovery_seconds": 234.52,
+      "backup_age_at_freeze_seconds": 3.44,
+      "survivors_verified": 6,
+      "withdrawn_absent": true,
+      "authority_epoch": 2,
+      "http_checks": 20,
+      "http_requests": 29,
+      "target_recovery_seconds": 1800,
+      "target_backup_age_seconds": 900,
+      "single_observation_only": true,
+      "real_participants": 0,
+      "expert_review": "pending"
+    },
+    "network_fault": {
+      "scope": "UID 1001 TCP443 outbound blocked; SSM operator unaffected",
+      "readiness_status": 503,
+      "authenticated_state_status": 503,
+      "after_removal_status": 200,
+      "observed_recovery_ms": 27285,
+      "exact_rule_removed": true
+    },
+    "iam_fault_probe": {
+      "blocking_observed": false,
+      "observation_seconds": 60,
+      "observed_status": 200,
+      "temporary_policy_removed": true,
+      "cause": "unconfirmed"
+    },
+    "operating_checks": {
+      "critical_file_hashes_matched": 47,
+      "sigkill_service_restart_observed": true,
+      "restart_count": 1,
+      "effective_restart_limit_seconds": 60,
+      "effective_restart_burst": 3,
+      "backup_interval_seconds": 300,
+      "backup_accuracy_seconds": 10,
+      "timer_trigger_succeeded": true,
+      "backup_freshness_limit_seconds": 900,
+      "inbound_rules": 0,
+      "encrypted_volumes": 2
+    },
+    "teardown": {
+      "terraform_destroyed": 31,
+      "audit_checks": 37,
+      "residuals": 0,
+      "lookup_errors": 0,
+      "s3_versions_deleted": 26,
+      "remaining_versions_markers_uploads": 0,
+      "ebs_volumes_absent": 4,
+      "new_snapshots": 0,
+      "table_backups": 0,
+      "deletion_authority_removed_after_backup_purge": true,
+      "scheduled_termination_scheduler_role_confirmed": true
+    }
+  },
+  "limitations": [
+    "한 번의 합성 장애 실험이며 가용성이나 복구 목표를 보장하지 않음",
+    "수동으로 직전 백업을 만든 실험의 백업 나이를 일반적인 RPO로 해석할 수 없음",
+    "네트워크 차단 검사는 전체 AWS 통신 차단이며 DynamoDB 자체 장애 재현과 구분함",
+    "이번 배포는 모델 답변 품질이나 실제 사용자 편의성을 평가하지 않음",
+    "법률·금융 전문가 검토와 독립 참가자 평가는 아직 대기 중"
+  ],
+  "source_sha256": {
+    "app/cloud_rehearsal.py": "406d5b6a61135b96b2cd57279ac9aace216bebc4b996919ebe204a15a5cb8954",
+    "app/cloud_deletion_authority.py": "9299971d40e16d2a322a96fe7b460b7374eddb7d76bcf8370a0f4d87a284388e",
+    "app/cloud_authority_handler.py": "ec6469943793c3c0c462b3a75d439f58f70ac1a62ca4c940335d2cf6e8b8026c",
+    "app/cloud_backup.py": "372a73c06d5bd4502eeeabb6da9b34dda14f5daf5990574b67b8b24dfdc646cb",
+    "app/participant_storage.py": "c272e70399683834fa654f0d5d4a1ce89327c54be8cea1e56ef24951bddc1078",
+    "app/participant_recovery.py": "c03a945ce3d0109657c903c2dde8c4d0a013800dc0321e803c83de5066622257",
+    "infra/rehearsal/main.tf": "6d70e63857b61adce613b4041a5b89c39da7f4d5ad3052bd44ef3db2e826fa75",
+    "infra/rehearsal/systemd/youth-law-rehearsal.service": "41619258652f32dca7d53b06cf700f5a9edd4b52a6390419226946dbdff2f6e1",
+    "infra/rehearsal/systemd/youth-law-rehearsal-backup.timer": "ea6cb4de8291e73b56e03eff53175c5975c91a84037db439ccc2c0b706a03548",
+    "requirements-rehearsal.lock": "fb15b9aa51c71166ed6c85890cbe88b364ca58a86fc363d42a7e6590bf47eeb5"
+  }
+}

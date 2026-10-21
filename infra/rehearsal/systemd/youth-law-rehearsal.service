@@ -1,0 +1,44 @@
+[Unit]
+Description=Youth Law deletion and recovery rehearsal application
+After=network-online.target var-lib-youthlaw.mount
+Wants=network-online.target
+Requires=var-lib-youthlaw.mount
+ConditionPathExists=/etc/youthlaw/cloud.json
+ConditionPathExists=/opt/youthlaw/venv/bin/python
+StartLimitIntervalSec=60s
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=youthlaw
+Group=youthlaw
+WorkingDirectory=/opt/youthlaw
+ExecStart=/opt/youthlaw/venv/bin/python -m app.cloud_rehearsal serve --config /etc/youthlaw/cloud.json
+Restart=on-failure
+RestartSec=5s
+UMask=0077
+MemoryMax=512M
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+SystemCallArchitectures=native
+Environment=AWS_CONFIG_FILE=/etc/aws/config
+Environment=AWS_PROFILE=youthlaw-app
+Environment=AWS_SDK_LOAD_CONFIG=1
+ReadWritePaths=/var/lib/youthlaw
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=youth-law-rehearsal
+KillSignal=SIGTERM
+TimeoutStopSec=30s
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,71 @@
+{
+  "schema": "youth-law-aws-publication-review.v1",
+  "recorded_at": "2026-10-21T06:07:56.941208+00:00",
+  "scope": "AWS 실행 이후 공개 반영 전 로컬 검토·회귀 검사",
+  "base_commit": "eb73003b781b5957993da23e75e8079b07200b5f",
+  "historical_aws_evidence": {
+    "path": "aws-rehearsal-20261021.json",
+    "sha256": "6bdec34d23763a928d3f7a42e79ccaa6b1d088815c290f627711ebf4e3915f45",
+    "modified": false
+  },
+  "source_boundaries": {
+    "historical_record_is_deployed_snapshot": true,
+    "historical_captured_files_unchanged": 9,
+    "historical_captured_files_total": 10,
+    "post_run_terraform_change": "terraform fmt로 Lambda 속성의 공백 정렬만 변경; 당시 해시는 역사 증거로 보존",
+    "post_run_behavior_change": "participant/protected-study의 async 권한 확인을 스레드로 이동; AWS에서 재실행하지 않음",
+    "ci_change": "Python 3.11·3.12 및 Terraform fmt/init -backend=false/validate 자동 검사 추가"
+  },
+  "current_local_checks": {
+    "python311_full_suite": {
+      "passed": 412,
+      "warnings": 5
+    },
+    "python312_cloud_and_async_route_tests": {
+      "passed": 61,
+      "warnings": 1
+    },
+    "async_gate_regression": {
+      "before_fix": "failed",
+      "after_fix_passed": 4,
+      "concurrent_health_response": true,
+      "authority_error_response": 503
+    },
+    "ruff": "pass",
+    "terraform_fmt": "pass",
+    "terraform_validate": "pass",
+    "git_diff_check": "pass"
+  },
+  "remote_ci": "이 기록 시점에는 미실행; PR의 Checks 결과로 별도 확인",
+  "aws_execution_repeated": false,
+  "new_aws_resources_created": false,
+  "external_model_calls": 0,
+  "real_participants": 0,
+  "expert_review": "pending",
+  "real_participant_admission": "closed",
+  "limits": [
+    "로컬 회귀 검사는 AWS 재배포·복구 검증이 아니다",
+    "기존 AWS의 47개 파일 일치는 당시 배포 스냅샷에만 적용",
+    "법률 정확성·사용자 효과·고가용성을 검증한 결과가 아니다"
+  ],
+  "reviewed_current_source_sha256": {
+    ".github/workflows/ci.yml": "f293559388ae2eca1507b9fa9b323b4fa9cf4a5678263a8a3056818d8cd6cb99",
+    "app/cloud_authority_handler.py": "ec6469943793c3c0c462b3a75d439f58f70ac1a62ca4c940335d2cf6e8b8026c",
+    "app/cloud_backup.py": "372a73c06d5bd4502eeeabb6da9b34dda14f5daf5990574b67b8b24dfdc646cb",
+    "app/cloud_deletion_authority.py": "9299971d40e16d2a322a96fe7b460b7374eddb7d76bcf8370a0f4d87a284388e",
+    "app/cloud_rehearsal.py": "406d5b6a61135b96b2cd57279ac9aace216bebc4b996919ebe204a15a5cb8954",
+    "app/participant_policy.py": "029f99e6111738e043487091bc10a32436bffabafb880c5851ab83457bf7dbce",
+    "app/participant_recovery.py": "c03a945ce3d0109657c903c2dde8c4d0a013800dc0321e803c83de5066622257",
+    "app/participant_routes.py": "a75581ed125ab3aed5d9bd0b4fc5f08fea9f83339e296164d400a71f57e3549c",
+    "app/participant_storage.py": "c272e70399683834fa654f0d5d4a1ce89327c54be8cea1e56ef24951bddc1078",
+    "app/protected_study.py": "a369695b100d88465112e8b21e46fe4c2906d8ec37a92323e47b984941fc899f",
+    "app/rehearsal_app.py": "ddab5fd0b7af21f580381a0104910d24d63a2144a4403cf3391170b8be6ae633",
+    "app/study_readiness.py": "03948d6079cd3e023a169265b71d48b9fd1f2494f4a12bb22d48e360614d8fde",
+    "app/study_runtime.py": "d758af8db6292fc6465c7d272eb46032f87904c1491efb593a166bd67c3b68a9",
+    "infra/rehearsal/main.tf": "3d2aaedea466f3d0a8643ee14b5105ec64d5990fbd22ee6b4b8aa8f77067ba4a",
+    "infra/rehearsal/systemd/youth-law-rehearsal-backup.timer": "ea6cb4de8291e73b56e03eff53175c5975c91a84037db439ccc2c0b706a03548",
+    "infra/rehearsal/systemd/youth-law-rehearsal.service": "41619258652f32dca7d53b06cf700f5a9edd4b52a6390419226946dbdff2f6e1",
+    "requirements-rehearsal.lock": "fb15b9aa51c71166ed6c85890cbe88b364ca58a86fc363d42a7e6590bf47eeb5",
+    "tests/test_participant_routes_off_loop.py": "063131e05221c56e04bfe9ea901f39fdb472be397cfb4931361ffa48ca30fd40"
+  }
+}

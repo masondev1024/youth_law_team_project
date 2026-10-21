@@ -1,0 +1,12 @@
+[Unit]
+Description=Run the Youth Law rehearsal backup every 5 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=10s
+Persistent=true
+Unit=youth-law-rehearsal-backup.service
+
+[Install]
+WantedBy=timers.target
