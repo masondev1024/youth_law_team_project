@@ -11,7 +11,7 @@
 
 [문제·설계·재현 방법](docs/finance-consultation-recovery.md) · [개발자 리허설 앱](app/rehearsal_app.py) · [삭제 이력과 복구](app/participant_recovery.py)
 
-개인 후속 개발에서 수행한 AWS 합성 데이터 리허설은 [실행 경계와 종료 절차](docs/aws-rehearsal.md), [초기 리허설 결정과 관찰 한계](docs/engineering/aws-rehearsal-decisions.md), [초기 리허설 비식별 결과](docs/evidence/aws-rehearsal-20261021.json)에 기록했습니다. 별도의 후속 IAM 연결 재검증은 [문제·결과·한계](docs/engineering/iam-connection-revalidation-20261021.md)와 [비식별 증거](docs/evidence/iam-connection-revalidation-20261021.json)에 정리했습니다. 두 실행은 팀 프로젝트 결과와 구분되며, 실제 사용자·전문가 검토나 운영 서비스 검증을 뜻하지 않습니다. [공개 포트폴리오](https://jungseongheon.org/portfolio)
+개인 후속 개발에서 수행한 AWS 합성 데이터 리허설은 [실행 경계와 종료 절차](docs/aws-rehearsal.md), [초기 리허설 결정과 관찰 한계](docs/engineering/aws-rehearsal-decisions.md), [초기 리허설 비식별 결과](docs/evidence/aws-rehearsal-20261021.json)에 기록했습니다. 별도의 IAM 연결 재검증은 [기존 연결에 대한 후속 재검증](docs/engineering/iam-connection-revalidation-20261021.md), [실제 HTTP 경로로 수행한 추가 차단·복구 시험](docs/engineering/http-iam-revalidation-20261021.md), [비식별 증거](docs/evidence/http-iam-revalidation-20261021.json)에 정리했습니다. 모든 후속 검증은 팀 프로젝트와 구분되는 개인 작업이며, 실제 사용자·전문가 검토나 운영 서비스 검증을 뜻하지 않습니다. [공개 포트폴리오](https://jungseongheon.org/portfolio)
 
 상담 흐름의 현재 범위는 로컬 더미 검증입니다. 별도로 수행한 AWS 합성 데이터 리허설은 완료 후 자원을 정리했으며, 상시 서비스 검증은 아닙니다. 전문가 검토는 대기 중이고 실제 참가자 접수는 닫혀 있습니다. 팀 작업·개인 후속 개발, 모델 평가·사용자 효과·운영 검사를 구분합니다.
 

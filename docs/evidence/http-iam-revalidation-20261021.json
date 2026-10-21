@@ -1,0 +1,108 @@
+{
+  "schema": "youth-law-http-iam-revalidation.v1",
+  "date": "2026-10-21",
+  "scope": "personal_development_synthetic_data_only",
+  "result": "pass_with_explicit_pool_refresh_and_reconcile",
+  "transport": "loopback_tcp_http_to_same_uvicorn_process",
+  "http_path": "/rehearsal/api/state",
+  "same_server_process": true,
+  "http_status_sequence": [
+    200,
+    503,
+    200
+  ],
+  "observations": {
+    "baseline": {
+      "http_status": 200,
+      "synthetic_developer_records": 1,
+      "participant_records": 0,
+      "participant_admission": "closed",
+      "unauthenticated_status": 401
+    },
+    "deny_before_pool_refresh": {
+      "direct_permission_probe": "denied",
+      "http_status": 200,
+      "synthetic_developer_records": 1,
+      "participant_records": 0,
+      "immediate_revocation_observed": false
+    },
+    "deny_after_pool_refresh": {
+      "http_status": 503,
+      "protected_records_returned": false
+    },
+    "recovery_before_pool_refresh": {
+      "direct_permission_probe": "allowed",
+      "http_status": 503
+    },
+    "recovery_after_pool_refresh_and_reconcile": {
+      "http_status": 200,
+      "synthetic_record_hash_matches_baseline": true,
+      "synthetic_record_count_matches_baseline": true,
+      "participant_records": 0,
+      "participant_admission": "closed",
+      "probe_session_removed": true
+    }
+  },
+  "explicit_pool_refresh": true,
+  "reconcile_after_recovery": true,
+  "temporary_policy_removed": true,
+  "ssm_tunnel_readiness": "checked_separately_from_authenticated_http_probe",
+  "model_calls": 0,
+  "expert_review": "pending",
+  "local_checks": {
+    "source_contract_tests_passed": 420,
+    "private_probe_and_cleanup_contract_tests_passed": 22,
+    "private_tests_separate_from_public_suite": true,
+    "ruff": "passed",
+    "shell_syntax": "passed",
+    "source_files_integrity_checked": 193,
+    "unaccounted_source_drift": 0
+  },
+  "cleanup": {
+    "run_scope_only": true,
+    "residual_audit_checks": 34,
+    "resources_absent": 29,
+    "checks_covered_by_dedicated_bucket_audit": 5,
+    "residual_resources": 0,
+    "audit_errors": 0,
+    "s3_object_versions_and_delete_markers_removed": 10,
+    "backup_audit": "passed",
+    "completed_at_kst": "2026-10-21T21:55:52+09:00"
+  },
+  "cost": {
+    "approved_budget_usd": 3,
+    "budget_is_hard_billing_cap": false,
+    "final_charge_verified": false
+  },
+  "limits": [
+    "does_not_prove_immediate_iam_revocation",
+    "does_not_prove_automatic_recovery",
+    "does_not_identify_internal_aws_cache_or_propagation_cause",
+    "does_not_prove_public_https_or_operational_sla",
+    "does_not_measure_legal_accuracy_or_user_benefit",
+    "does_not_include_expert_review_or_real_participant_admission"
+  ],
+  "source_identity": {
+    "base_commit": "51f02da0cf340804626b6730c4d15d6d74a96779",
+    "scoped_source_sha256": {
+      "app/cloud_rehearsal.py": "00a94a29b13de157761cca394e995b48e617c7adb754512ae7e7bac190744733",
+      "app/rehearsal_transport_control.py": "1702f7fdfc25d8881c04e7e266e90d7f9906ecb99685f6c43b3af37ef40f90ae",
+      "scripts/http_iam_local_probe.py": "eaeb011eeaa52cbf2ca54ed4c9d9acbdb0bc2a3318ca71269813b4b1584c6d75",
+      "tests/test_http_iam_transport.py": "3696a0411fd542f1edf5a3639e31d8e19b0cc82e5dc44652fdfd3fbec514da9e",
+      "tests/test_rehearsal_transport_control.py": "d6abdbfb5783f13a5e10b3aa2ec8ae6a80c2bcc705c5d11b756d1fe47eaf6b6a"
+    },
+    "published_source_sha256": {
+      "app/cloud_rehearsal.py": "00a94a29b13de157761cca394e995b48e617c7adb754512ae7e7bac190744733",
+      "app/rehearsal_transport_control.py": "9b94e13c3905b262c893df51d51259435e3c3af95af081efc1f5c88fa2f325a7",
+      "scripts/http_iam_local_probe.py": "eaeb011eeaa52cbf2ca54ed4c9d9acbdb0bc2a3318ca71269813b4b1584c6d75",
+      "tests/test_http_iam_transport.py": "3696a0411fd542f1edf5a3639e31d8e19b0cc82e5dc44652fdfd3fbec514da9e",
+      "tests/test_rehearsal_transport_control.py": "d6abdbfb5783f13a5e10b3aa2ec8ae6a80c2bcc705c5d11b756d1fe47eaf6b6a"
+    },
+    "normalization": {
+      "app/rehearsal_transport_control.py": "removed_one_extra_blank_line_at_eof_only",
+      "aws_run_manifest_hash_remains_original": true,
+      "aws_revalidation_rerun": false
+    },
+    "four_files_match_run_hash_one_file_has_eof_whitespace_normalization": true
+  }
+}

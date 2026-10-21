@@ -2,6 +2,8 @@
 
 이 기록은 합성 데이터만 사용한 **초기 1회 개발자 리허설**에서 무엇을 관찰했고, 어떤 선택을 했으며, 어디까지 확인했는지 남긴다. 이 문서와 연결된 증거 JSON은 그 초기 실행의 기록이다. 이후 수행한 별도 IAM 연결 재검증의 문제·결과·한계는 [후속 기록](iam-connection-revalidation-20261021.md)과 [후속 비식별 증거](../evidence/iam-connection-revalidation-20261021.json)에 따로 정리했다. 두 기록의 관찰을 한 실행으로 합치지 않는다. AWS 자원은 각 실행 종료 후 제거했다. 실제 참여자 검증은 CLOSED이고 전문가 검토는 PENDING이다. 법률 정확성, 사용자 편익, 고가용성 또는 운영 SLA를 평가한 작업이 아니다.
 
+그 뒤 동일 프로세스의 실제 loopback TCP HTTP 경로에서도 별도 IAM 차단·복구 검증을 수행했다. 그 결과와 한계는 [HTTP IAM 재검증 기록](http-iam-revalidation-20261021.md)과 [비식별 증거](../evidence/http-iam-revalidation-20261021.json)에 있으며, 초기 실행의 결과를 소급해 바꾸지 않는다.
+
 공개 포트폴리오는 [jungseongheon.org/portfolio](https://jungseongheon.org/portfolio)에 게시되어 있다. 아래 연결 증거는 게시 전 시각에 기록된 안전한 요약이다. 그 안의 `public_site_updated: false`는 증거 캡처 당시 상태를 뜻한다.
 
 ## 결정 기록
