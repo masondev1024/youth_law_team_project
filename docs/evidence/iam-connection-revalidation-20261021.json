@@ -1,0 +1,60 @@
+{
+  "schema": "youth-law-iam-connection-revalidation-public.v1",
+  "checked_at_utc": "2026-10-21T08:16:01.281686+00:00",
+  "source_commit": "e13428648a25674b758f49a49303530ede3ffd0c",
+  "result": "passed_with_explicit_pool_refresh_on_deny_and_recovery",
+  "historical_connection_reuse_trial": {
+    "status": "failed_and_preserved",
+    "duration_seconds": 120,
+    "fresh_session_denials": 22,
+    "persistent_connection_allows": 22
+  },
+  "recovery_observation": {
+    "old_client_before_pool_refresh": "denied",
+    "old_client_after_pool_refresh": "allowed",
+    "explicit_sweep_asgi_status": 200
+  },
+  "asgi_status_sequence": [
+    200,
+    503,
+    200
+  ],
+  "asgi_scope": "in_process_real_aws_authority_path",
+  "runtime_restart_readiness_status": 200,
+  "local_validation": {
+    "offline_tests_passed": 49,
+    "optional_aws_test_skipped_locally": 1,
+    "aws_allowed_async_test_passed_separately": true,
+    "ruff_passed": true
+  },
+  "model_calls": 0,
+  "cleanup": {
+    "checked_at_utc": "2026-10-21T08:18:37Z",
+    "direct_checks": 34,
+    "errors": 0,
+    "residual_resources": 0,
+    "s3_versions_and_delete_markers_removed": 27,
+    "ebs_volumes_remaining": 0,
+    "ebs_snapshots_remaining": 0,
+    "dynamodb_backups_remaining": 0,
+    "terraform_resources_remaining": 0
+  },
+  "limits": [
+    "not_uvicorn_socket_fault_injection",
+    "explicit_pool_refresh_not_immediate_or_automatic_revocation",
+    "aws_internal_cache_mechanism_not_established",
+    "not_legal_or_user_quality_evidence",
+    "expert_review_pending",
+    "real_participant_admission_closed"
+  ],
+  "synthetic_data_only": true,
+  "ownership": "personal_follow_up",
+  "expert_review": "pending",
+  "real_participant_admission": "closed",
+  "asgi_route": "/ops/participant-records/status",
+  "same_frozen_credentials_followup": {
+    "existing_client_before_pool_close": "allowed",
+    "new_client_same_credentials": "denied",
+    "existing_client_after_pool_close": "denied"
+  }
+}
