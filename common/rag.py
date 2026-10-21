@@ -163,6 +163,9 @@ class DomainRAG:
         self.alpha = float(os.getenv("HYBRID_ALPHA", _ALPHA_BY_DOMAIN.get(domain, _DEFAULT_ALPHA)))
 
         pref = os.getenv("RAG_BACKEND", "chroma").lower()
+        if pref == "stub":
+            # Explicit offline mode must not open installed indexes or model clients.
+            return
         if pref == "pgvector":
             # 명시적 pgvector 선택 — 안 되면 stub(절대 chroma로 슬쩍 안 넘어감)
             if self._try_pgvector():
