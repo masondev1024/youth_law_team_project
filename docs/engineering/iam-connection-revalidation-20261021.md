@@ -4,6 +4,8 @@
 
 이 기록은 [초기 AWS 리허설 결정 기록](aws-rehearsal-decisions.md)의 후속 증거다. 초기 리허설의 판단이나 결과를 소급해 바꾸지 않는다. 식별 정보를 제거한 수치는 [재검증 증거 JSON](../evidence/iam-connection-revalidation-20261021.json)에 있다.
 
+이후 동일 프로세스의 실제 loopback HTTP 경로를 대상으로 한 별도 검증은 [HTTP IAM 차단·복구 재검증](http-iam-revalidation-20261021.md)에 기록했다. 두 검증은 대상과 관측 경로가 다르므로 결과를 합산하지 않는다.
+
 ## 문제와 선택
 
 IAM 정책 변경 API가 성공했다는 사실만으로 기존 앱의 실제 DynamoDB 요청도 차단됐다고 볼 수 없었다. 앱 경로의 거부를 확인하고, 권한 복구 뒤에도 앱이 정상 상태로 돌아오는지 확인할 필요가 있었다.
