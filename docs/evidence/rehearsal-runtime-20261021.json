@@ -5,7 +5,7 @@
   "external_models": false,
   "participant_admission": false,
   "counts": {
-    "http_requests": 43,
+    "http_requests": 42,
     "peak_connections": 9,
     "scenarios": 47
   },
@@ -21,7 +21,7 @@
   "cases": [
     {
       "actual": 200,
-      "duration_ms": 510.51,
+      "duration_ms": 427.81,
       "expected": 200,
       "scenario": "server_start",
       "status": "pass"
@@ -32,7 +32,7 @@
         "session_admission": false,
         "status": "ready"
       },
-      "duration_ms": 4.74,
+      "duration_ms": 3.6,
       "expected": {
         "external_model_enabled": false,
         "session_admission": false,
@@ -43,70 +43,70 @@
     },
     {
       "actual": 401,
-      "duration_ms": 2.59,
+      "duration_ms": 2.05,
       "expected": 401,
       "scenario": "missing_cookie",
       "status": "pass"
     },
     {
       "actual": 200,
-      "duration_ms": 6.64,
+      "duration_ms": 5.69,
       "expected": 200,
       "scenario": "cookie_login",
       "status": "pass"
     },
     {
       "actual": true,
-      "duration_ms": 6.64,
+      "duration_ms": 5.69,
       "expected": true,
       "scenario": "task_scenarios_hidden_at_login",
       "status": "pass"
     },
     {
       "actual": 200,
-      "duration_ms": 6.61,
+      "duration_ms": 5.81,
       "expected": 200,
       "scenario": "cookie_auth",
       "status": "pass"
     },
     {
       "actual": 403,
-      "duration_ms": 2.9,
+      "duration_ms": 2.58,
       "expected": 403,
       "scenario": "csrf_rejected",
       "status": "pass"
     },
     {
       "actual": 403,
-      "duration_ms": 2.31,
+      "duration_ms": 2.1,
       "expected": 403,
       "scenario": "origin_rejected",
       "status": "pass"
     },
     {
       "actual": 404,
-      "duration_ms": 2.53,
+      "duration_ms": 2.06,
       "expected": 404,
       "scenario": "forwarded_header_rejected",
       "status": "pass"
     },
     {
       "actual": 404,
-      "duration_ms": 2.86,
+      "duration_ms": 1.9,
       "expected": 404,
       "scenario": "wrong_host_rejected",
       "status": "pass"
     },
     {
       "actual": 422,
-      "duration_ms": 4.67,
+      "duration_ms": 3.83,
       "expected": 422,
       "scenario": "malformed_json_rejected",
       "status": "pass"
     },
     {
       "actual": 413,
-      "duration_ms": 3.61,
+      "duration_ms": 3.34,
       "expected": 413,
       "scenario": "oversize_body_rejected",
       "status": "pass"
@@ -116,7 +116,7 @@
         "status": 408,
         "under_8_seconds": true
       },
-      "duration_ms": 5005.83,
+      "duration_ms": 5010.65,
       "expected": {
         "status": 408,
         "under_8_seconds": true
@@ -126,7 +126,7 @@
     },
     {
       "actual": 200,
-      "duration_ms": 11.75,
+      "duration_ms": 18.06,
       "expected": 200,
       "scenario": "health_after_slow_body",
       "status": "pass"
@@ -137,7 +137,7 @@
         "retry_after": "1",
         "status": 429
       },
-      "duration_ms": 9.45,
+      "duration_ms": 8.8,
       "expected": {
         "attempts_under_10": true,
         "retry_after": "1",
@@ -148,56 +148,56 @@
     },
     {
       "actual": 200,
-      "duration_ms": 59.93,
+      "duration_ms": 17.65,
       "expected": 200,
       "scenario": "capacity_recovered",
       "status": "pass"
     },
     {
       "actual": 200,
-      "duration_ms": 11.26,
+      "duration_ms": 7.11,
       "expected": 200,
       "scenario": "recovery_login",
       "status": "pass"
     },
     {
       "actual": 200,
-      "duration_ms": 20.84,
+      "duration_ms": 11.45,
       "expected": 200,
       "scenario": "synthetic_consent",
       "status": "pass"
     },
     {
       "actual": true,
-      "duration_ms": 20.84,
+      "duration_ms": 11.45,
       "expected": true,
       "scenario": "task_scenarios_hidden_after_consent",
       "status": "pass"
     },
     {
       "actual": 200,
-      "duration_ms": 13.0,
+      "duration_ms": 11.23,
       "expected": 200,
       "scenario": "unsaved_record_restore",
       "status": "pass"
     },
     {
       "actual": true,
-      "duration_ms": 13.0,
+      "duration_ms": 11.23,
       "expected": true,
       "scenario": "selected_task_scenario_after_unsaved_restore",
       "status": "pass"
     },
     {
       "actual": 200,
-      "duration_ms": 11.72,
+      "duration_ms": 11.82,
       "expected": 200,
       "scenario": "task_start",
       "status": "pass"
     },
     {
       "actual": true,
-      "duration_ms": 11.72,
+      "duration_ms": 11.82,
       "expected": true,
       "scenario": "only_selected_task_scenario_after_start",
       "status": "pass"
@@ -210,7 +210,7 @@
         "request_count": 1,
         "requests_at_most_36": true
       },
-      "duration_ms": 10.04,
+      "duration_ms": 9.1,
       "expected": {
         "all_status_200": true,
         "payload_consistent": true,
@@ -229,7 +229,7 @@
         "request_count": 4,
         "requests_at_most_36": true
       },
-      "duration_ms": 32.05,
+      "duration_ms": 24.7,
       "expected": {
         "all_status_200": true,
         "payload_consistent": true,
@@ -248,7 +248,7 @@
         "request_count": 8,
         "requests_at_most_36": true
       },
-      "duration_ms": 59.37,
+      "duration_ms": 43.72,
       "expected": {
         "all_status_200": true,
         "payload_consistent": true,
@@ -261,49 +261,49 @@
     },
     {
       "actual": 200,
-      "duration_ms": 15.79,
+      "duration_ms": 13.99,
       "expected": 200,
       "scenario": "synthetic_observation",
       "status": "pass"
     },
     {
       "actual": 200,
-      "duration_ms": 63.23,
+      "duration_ms": 409.54,
       "expected": 200,
       "scenario": "server_start",
       "status": "pass"
     },
     {
       "actual": 401,
-      "duration_ms": 4.81,
+      "duration_ms": 3.6,
       "expected": 401,
       "scenario": "stale_cookie_rejected",
       "status": "pass"
     },
     {
       "actual": 200,
-      "duration_ms": 8.69,
+      "duration_ms": 7.22,
       "expected": 200,
       "scenario": "fresh_login_after_restart",
       "status": "pass"
     },
     {
       "actual": 200,
-      "duration_ms": 12.72,
+      "duration_ms": 11.01,
       "expected": 200,
       "scenario": "record_restore_after_restart",
       "status": "pass"
     },
     {
       "actual": true,
-      "duration_ms": 12.72,
+      "duration_ms": 11.01,
       "expected": true,
       "scenario": "selected_task_scenario_after_saved_observation_restore",
       "status": "pass"
     },
     {
       "actual": true,
-      "duration_ms": 12.72,
+      "duration_ms": 11.01,
       "expected": true,
       "scenario": "exact_observation_recovery",
       "status": "pass"
@@ -325,21 +325,21 @@
     },
     {
       "actual": 200,
-      "duration_ms": 14.45,
+      "duration_ms": 11.66,
       "expected": 200,
       "scenario": "withdrawal",
       "status": "pass"
     },
     {
       "actual": true,
-      "duration_ms": 14.45,
+      "duration_ms": 11.66,
       "expected": true,
       "scenario": "task_scenarios_cleared_after_withdrawal",
       "status": "pass"
     },
     {
       "actual": 1,
-      "duration_ms": 6.32,
+      "duration_ms": 5.5,
       "expected": 1,
       "scenario": "old_backup_latest_deletion_applied",
       "status": "pass"
@@ -412,28 +412,28 @@
     },
     {
       "actual": 200,
-      "duration_ms": 491.74,
+      "duration_ms": 371.52,
       "expected": 200,
       "scenario": "server_start",
       "status": "pass"
     },
     {
       "actual": 200,
-      "duration_ms": 11.52,
+      "duration_ms": 8.86,
       "expected": 200,
       "scenario": "login_after_backup_restore",
       "status": "pass"
     },
     {
       "actual": 0,
-      "duration_ms": 11.57,
+      "duration_ms": 6.6,
       "expected": 0,
       "scenario": "withdrawn_state_not_resurrected",
       "status": "pass"
     },
     {
       "actual": 410,
-      "duration_ms": 9.7,
+      "duration_ms": 6.42,
       "expected": 410,
       "scenario": "withdrawn_record_restore_denied",
       "status": "pass"
@@ -444,10 +444,10 @@
     "listener_closed": true,
     "temporary_root_removed": true
   },
-  "elapsed_seconds": 8.42,
+  "elapsed_seconds": 7.87,
   "source_sha256": {
     "app/participant_deletion_ledger.py": "f4069e52a182b58d332d4bc217232b8bf101490c7a9e0e15e4e046cfef7c6fa6",
-    "app/participant_recovery.py": "cfee4f672537e1f8705a828d4999fd713c5b9f0779395b47a22a7efb4438fd39",
+    "app/participant_recovery.py": "a91f7793e0989e33c1daf504c6548ea94c102dc93a7db6a534e274b8dda4f7aa",
     "app/participant_storage.py": "dfc53953cbaac6a62db2f76e94a023227b9feb7af7a2672ba0069d56994098f9",
     "app/rehearsal_app.py": "04752848390ae1348f8903c47e8ab7b70f357ec2ffe2f15f3d1f15b8b5992cb2",
     "app/rehearsal_sessions.py": "3550bb251d9e7dd288f14b89c1500356b1eb0fa75585b864b82d1cd39c300ec7",
@@ -458,26 +458,26 @@
   "child_memory_observation": {
     "limit_bytes": 268435456,
     "limit_exceeded": false,
-    "max_sampled_rss_kb": 63424,
-    "samples": 29,
+    "max_sampled_rss_kb": 63248,
+    "samples": 27,
     "sampling_method": "ps RSS sampled every 250ms",
     "scope": "sampled observations, not a peak-memory guarantee"
   },
   "load_endpoint": "/api/preparation/card",
   "load_metrics": {
     "1": {
-      "p50_ms": 10.04,
-      "p95_ms": 10.04,
+      "p50_ms": 9.1,
+      "p95_ms": 9.1,
       "requests": 1
     },
     "4": {
-      "p50_ms": 25.12,
-      "p95_ms": 32.05,
+      "p50_ms": 20.55,
+      "p95_ms": 24.7,
       "requests": 4
     },
     "8": {
-      "p50_ms": 40.05,
-      "p95_ms": 59.37,
+      "p50_ms": 27.5,
+      "p95_ms": 43.72,
       "requests": 8
     }
   }

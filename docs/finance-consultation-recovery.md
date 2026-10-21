@@ -40,6 +40,15 @@
 
 복구 명령은 격리 사본에 먼저 삭제 이력을 적용한다. 백업을 직접 서비스 경로에 복사하는 절차는 이 검증을 건너뛰므로 사용하지 않는다.
 
+복구 프로세스가 강제 종료되어 staging 디렉터리가 남으면, 서비스가 종료된 상태에서 `cleanup-staging`을 실행한 뒤 `restore`를 다시 실행한다. 이 명령은 정확한 UUID4 staging 파일과 SQLite sidecar만 검사하고 삭제하며, DB나 백업을 열어 채택하지 않는다. 예상하지 못한 항목이나 안전 검증 실패가 있으면 아무 파일도 지우지 않고 중단한다.
+
+```sh
+python -m app.participant_recovery cleanup-staging \
+  --storage-root "$PRIVATE_STORAGE_ROOT" \
+  --notice-file "$PARTICIPANT_NOTICE_FILE" \
+  --policy-file "$PARTICIPANT_POLICY_FILE"
+```
+
 ## 검사 재현
 
 프로젝트 루트의 Python 환경에서 실행한다. 더미 검사에는 외부 모델이나 AWS 계정이 필요하지 않다.
@@ -52,7 +61,7 @@ python -m app.participant_recovery --help
 
 삭제 전 백업, 철회한 기록과 유지할 기록, 삭제 의도 기록 뒤 실패, 이력 누락·손상·불일치, 실행 중 복구 거절, 복구 반복, 만료 처리를 검사한다. 실제 DB·정책·토큰·관찰 원문은 공개하지 않는다. 실제 운영자 명령은 별도의 비공개 경로와 검토된 정책 파일이 필요하다.
 
-2026-10-21 공개 후보에서 기존 계약을 포함한 `pytest tests/` 349개와 Ruff 검사를 통과했다. 실제 loopback HTTP 검사에서는 인증, 요청 제한, 동시 요청 1·4·8개, 재시작, 삭제 전 백업 복구 등 47개 시나리오를 확인했다. [더미 실행 결과와 소스 지문](evidence/rehearsal-runtime-20261021.json)을 함께 남긴다. 메모리는 주기적으로 관찰한 값이며 최대 메모리나 운영 SLO의 보장이 아니다.
+2026-10-21 공개 후보에서 기존 계약을 포함한 `pytest tests/` 351개와 Ruff 검사를 통과했다. 실제 loopback HTTP 검사에서는 인증, 요청 제한, 동시 요청 1·4·8개, 재시작, 삭제 전 백업 복구 등 47개 시나리오를 확인했다. [더미 실행 결과와 소스 지문](evidence/rehearsal-runtime-20261021.json)을 함께 남긴다. 메모리는 주기적으로 관찰한 값이며 최대 메모리나 운영 SLO의 보장이 아니다.
 
 테스트 환경은 기존 Python 3.11 가상환경을 사용했다. `httpx`는 검증한 버전으로 고정했지만 전체 의존성을 잠근 환경은 아니다. 기존 FastAPI startup 이벤트와 Starlette의 `httpx` TestClient 연동에 대한 폐기 예정 경고가 남아 있으며, 의존성 교체는 별도 호환성 검사가 필요하다.
 

@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+import multiprocessing
 import os
 import shutil
+import signal
 import sqlite3
 import threading
 import time
 import uuid
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import pytest
 
@@ -103,6 +106,25 @@ def restore(store, backup):
         backup,
         expected_ledger_checkpoint=store.ledger.checkpoint_id(),
     )
+
+
+def _kill_restore_before_replace(root, backup):
+    store = ParticipantStudyStore(
+        root,
+        notice_sha256=_NOTICE,
+        policy_sha256=_POLICY,
+        clock=Clock(),
+        _defer_recovery=True,
+    )
+    original_replace = recovery_module.os.replace
+
+    def kill_before_database_replace(source, target):
+        if Path(target) == store.database:
+            os.kill(os.getpid(), signal.SIGKILL)
+        return original_replace(source, target)
+
+    recovery_module.os.replace = kill_before_database_replace
+    restore(store, backup)
 
 
 def test_old_backup_restore_replays_latest_withdrawal_before_reads(private_root, clock, tmp_path):
@@ -415,6 +437,81 @@ def test_restore_is_repeatable_and_blocks_while_service_lease_is_held(
     assert restore(store, backup)["records_withdrawn"] == 1
     assert restore(store, backup)["records_withdrawn"] == 1
     assert store.read_record(record["record_id"]) is None
+
+
+def test_sigkill_orphan_staging_can_be_explicitly_cleaned_before_restore(
+    private_root, clock, tmp_path
+):
+    store = make_store(private_root, clock)
+    withdrawn = make_record(store, clock)
+    survivor = make_record(store, clock)
+    backup = tmp_path / "pre-withdrawal.sqlite3"
+    backup_bytes = save_backup(store, backup)
+    assert store.withdraw(withdrawn["record_id"])
+    checkpoint = store.ledger.checkpoint.read_bytes()
+
+    process = multiprocessing.get_context("fork").Process(
+        target=_kill_restore_before_replace, args=(private_root, backup)
+    )
+    process.start()
+    process.join(timeout=10)
+    if process.is_alive():
+        process.kill()
+        process.join(timeout=2)
+        pytest.fail("restore subprocess did not reach its forced SIGKILL point")
+    assert process.exitcode == -signal.SIGKILL
+
+    staging = private_root / ".participant-recovery-v1"
+    assert len(list(staging.iterdir())) == 1
+    staged_file = next(staging.iterdir())
+    sidecar = staging / f"{staged_file.name}-journal"
+    sidecar.write_bytes(b"stale sqlite journal")
+    os.chmod(sidecar, 0o600)
+    with pytest.raises(StudyStorageError) as error:
+        restore(store, backup)
+    assert error.value.code == "recovery_staging_not_empty"
+
+    assert recovery_module.cleanup_orphan_staging(store) == 2
+    assert recovery_module.cleanup_orphan_staging(store) == 0
+    assert list(staging.iterdir()) == []
+    assert restore(store, backup)["records_withdrawn"] == 1
+    assert store.read_record(withdrawn["record_id"]) is None
+    assert store.read_record(survivor["record_id"]) is not None
+    assert backup.read_bytes() == backup_bytes
+    assert store.ledger.checkpoint.read_bytes() == checkpoint
+
+
+def test_orphan_staging_cleanup_is_fenced_and_validates_all_entries_first(
+    private_root, clock
+):
+    store = make_store(private_root, clock)
+    staging = private_root / ".participant-recovery-v1"
+    staging.mkdir(mode=0o700)
+    orphan = staging / f"{uuid.uuid4().hex}-staged.sqlite3"
+    orphan.write_bytes(b"orphan")
+    os.chmod(orphan, 0o600)
+    unexpected = staging / "unexpected.sqlite3"
+    unexpected.write_bytes(b"keep")
+    os.chmod(unexpected, 0o600)
+    database_before = store.database.read_bytes()
+    ledger_before = store.ledger.checkpoint.read_bytes()
+
+    with store.service_lease():
+        with pytest.raises(StudyStorageError) as error:
+            recovery_module.cleanup_orphan_staging(store)
+        assert error.value.code == "service_active"
+    assert orphan.read_bytes() == b"orphan"
+    assert unexpected.read_bytes() == b"keep"
+    assert store.database.read_bytes() == database_before
+    assert store.ledger.checkpoint.read_bytes() == ledger_before
+
+    with pytest.raises(StudyStorageError) as error:
+        recovery_module.cleanup_orphan_staging(store)
+    assert error.value.code == "unsafe_recovery_staging"
+    assert orphan.read_bytes() == b"orphan"
+    assert unexpected.read_bytes() == b"keep"
+    assert store.database.read_bytes() == database_before
+    assert store.ledger.checkpoint.read_bytes() == ledger_before
 
 
 def test_two_service_shared_leases_coexist_and_fence_restore(private_root, clock, tmp_path):

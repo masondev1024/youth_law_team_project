@@ -12,6 +12,7 @@ import fcntl
 import hashlib
 import json
 import os
+import re
 import shutil
 import sqlite3
 import stat
@@ -32,6 +33,9 @@ from app.study_storage import (
 
 _STAGING_NAME = ".participant-recovery-v1"
 _STAGE_FILE = "staged.sqlite3"
+_STAGE_ENTRY = re.compile(
+    r"(?P<uuid>[0-9a-f]{32})-staged\.sqlite3(?:-(?:journal|wal|shm))?\Z"
+)
 
 
 def _safe_source(path: Path, target: Path) -> tuple[os.stat_result, str]:
@@ -95,6 +99,115 @@ def _stage_root(root: Path) -> Path:
         raise
     except OSError as exc:
         raise StudyStorageError("filesystem_error") from exc
+
+
+def _stage_entry_name_is_known(name: str) -> bool:
+    match = _STAGE_ENTRY.fullmatch(name)
+    if match is None:
+        return False
+    try:
+        parsed = uuid.UUID(hex=match.group("uuid"))
+    except ValueError:
+        return False
+    return parsed.version == 4 and parsed.variant == uuid.RFC_4122
+
+
+def _stage_file_identity(info: os.stat_result) -> tuple[int, ...]:
+    return (
+        info.st_dev,
+        info.st_ino,
+        info.st_mode,
+        info.st_uid,
+        info.st_nlink,
+        info.st_size,
+        info.st_mtime_ns,
+    )
+
+
+def cleanup_orphan_staging(store: ParticipantStudyStore) -> int:
+    """Remove only fully validated abandoned restore files under both recovery fences."""
+    stage_root = store.root / _STAGING_NAME
+    with ExitStack() as stack:
+        stack.enter_context(store.service_lease())
+        stack.enter_context(store._locked())
+        try:
+            directory_info = stage_root.lstat()
+        except FileNotFoundError:
+            return 0
+        except OSError as exc:
+            raise StudyStorageError("unsafe_recovery_staging") from exc
+        if not stat.S_ISDIR(directory_info.st_mode):
+            raise StudyStorageError("unsafe_recovery_staging")
+        try:
+            _check_ancestors(stage_root)
+            _check_mode(stage_root, 0o700)
+            _check_no_acl(stage_root)
+            directory_fd = os.open(
+                stage_root,
+                os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0),
+            )
+        except StudyStorageError:
+            raise
+        except OSError as exc:
+            raise StudyStorageError("unsafe_recovery_staging") from exc
+
+        try:
+            opened_info = os.fstat(directory_fd)
+            if (
+                not stat.S_ISDIR(opened_info.st_mode)
+                or opened_info.st_uid != os.getuid()
+                or stat.S_IMODE(opened_info.st_mode) != 0o700
+                or (opened_info.st_dev, opened_info.st_ino)
+                != (directory_info.st_dev, directory_info.st_ino)
+            ):
+                raise StudyStorageError("unsafe_recovery_staging")
+            try:
+                names = os.listdir(directory_fd)
+            except OSError as exc:
+                raise StudyStorageError("unsafe_recovery_staging") from exc
+
+            validated: dict[str, tuple[int, ...]] = {}
+            for name in names:
+                if not _stage_entry_name_is_known(name):
+                    raise StudyStorageError("unsafe_recovery_staging")
+                try:
+                    info = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+                except OSError as exc:
+                    raise StudyStorageError("unsafe_recovery_staging") from exc
+                if (
+                    not stat.S_ISREG(info.st_mode)
+                    or info.st_uid != os.getuid()
+                    or info.st_nlink != 1
+                    or stat.S_IMODE(info.st_mode) != 0o600
+                    or info.st_size > 64 * 1024 * 1024
+                ):
+                    raise StudyStorageError("unsafe_recovery_staging")
+                try:
+                    _check_no_acl(stage_root / name)
+                except StudyStorageError as exc:
+                    raise StudyStorageError("unsafe_recovery_staging") from exc
+                validated[name] = _stage_file_identity(info)
+
+            removed = 0
+            for name, identity in validated.items():
+                try:
+                    current = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+                except OSError as exc:
+                    raise StudyStorageError("unsafe_recovery_staging") from exc
+                if _stage_file_identity(current) != identity or not stat.S_ISREG(
+                    current.st_mode
+                ):
+                    raise StudyStorageError("unsafe_recovery_staging")
+                try:
+                    os.unlink(name, dir_fd=directory_fd)
+                except OSError as exc:
+                    raise StudyStorageError("filesystem_error") from exc
+                removed += 1
+            if removed:
+                os.fsync(directory_fd)
+            return removed
+        finally:
+            os.close(directory_fd)
 
 
 def _fsync_dir(path: Path) -> None:
@@ -359,7 +472,9 @@ def _store_from_args(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("checkpoint", "restore", "bootstrap"))
+    parser.add_argument(
+        "action", choices=("checkpoint", "restore", "cleanup-staging", "bootstrap")
+    )
     parser.add_argument("--storage-root", type=Path, required=True)
     parser.add_argument("--notice-file", type=Path, required=True)
     parser.add_argument("--policy-file", type=Path, required=True)
@@ -386,6 +501,10 @@ def main(argv: list[str] | None = None) -> int:
                 f"withdrawn={result['records_withdrawn']} "
                 f"expired={result['expired_records_removed']}"
             )
+        elif args.action == "cleanup-staging":
+            store = _store_from_args(args, recovery=True)
+            removed = cleanup_orphan_staging(store)
+            print(f"staging cleanup complete: files_removed={removed}")
         else:
             if args.expected_db_sha256 is None:
                 raise StudyStorageError("invalid_configuration")
