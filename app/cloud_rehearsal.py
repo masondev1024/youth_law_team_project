@@ -253,6 +253,10 @@ def serve(config: dict) -> None:
 
     from app.protected_study import read_token_file
     from app.rehearsal_app import create_app
+    from app.rehearsal_transport_control import (
+        TransportControlServer,
+        enabled_from_environment,
+    )
     from app.study_runtime import (
         PrivateStudyRuntime,
         StudyRuntimeUnavailable,
@@ -277,16 +281,32 @@ def serve(config: dict) -> None:
         allowed_origin="http://localhost:8017",
         notice_text=_private_bytes(root, root / "control/notice.txt").decode("utf-8"),
     )
-    uvicorn.run(
-        app,
-        host="127.0.0.1",
-        port=8017,
-        workers=1,
-        access_log=False,
-        proxy_headers=False,
-        forwarded_allow_ips="",
-        log_config=private_server_log_config(runtime),
-    )
+    authority = runtime.participant_store.remote_authority
+    transport_control = None
+    original_authority_client = None
+    if enabled_from_environment(root):
+        original_authority_client = authority.client
+        transport_control = TransportControlServer(
+            root, runtime, original_authority_client
+        )
+        authority.client = transport_control.start()
+    try:
+        uvicorn.run(
+            app,
+            host="127.0.0.1",
+            port=8017,
+            workers=1,
+            access_log=False,
+            proxy_headers=False,
+            forwarded_allow_ips="",
+            log_config=private_server_log_config(runtime),
+        )
+    finally:
+        if transport_control is not None:
+            try:
+                transport_control.close()
+            finally:
+                authority.client = original_authority_client
 
 
 def main(argv: list[str] | None = None) -> int:
