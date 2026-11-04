@@ -1,19 +1,24 @@
 # 청년 생활법률 상담 AI
 
-청년이 평어로 법률 고민을 입력하면(분야 선택 X) → 시스템이 분야 자동 판별 →
-노동/주택/소비자/금융 전문가가 각자 RAG로 현행 법령을 찾아 답 + 공식 연락처 + 문서 초안까지 제공.
+법률 질문을 분야별로 분류해 법령 근거와 공식 문의 경로를 안내합니다. 팀에서는 금융 분야 검색·Agent와 질문 분류 흐름을 맡았습니다.
 
 ## 개인 후속 개발: 금융 첫 상담 준비
 
-금융 문제를 처음 겪는 사람이 공식 문의 경로와 상담 전에 확인할 내용을 정리하도록 준비 카드를 추가했습니다. 팀 프로젝트에서 금융 분야 검색·Agent와 질문 분류 흐름을 맡은 뒤, 개인적으로 검색 근거의 누락과 보류 기준, 출처 확인, 인증·요청 제한·복구를 보강하고 있습니다.
+첫 상담 준비 카드와 기록의 인증·철회·복구를 구현했습니다. AWS 리허설에서는 삭제 이력을 DynamoDB에 따로 두고, 백업 사본을 서비스에 연결하기 전에 적용했습니다.
 
-특히 삭제 이전 백업을 복원했을 때 동의·관찰 기록이 다시 나타나는 문제를 다룹니다. 삭제 이력을 복원 대상 DB 밖에 보관하고, 최신 이력을 적용한 사본만 서비스에 연결하도록 구성합니다. AI 기능을 만드는 것에 더해, 사용할 근거와 실패했을 때의 동작·기록 처리까지 함께 확인하려는 후속 작업입니다.
+- **백업 복구** · AWS 개발자 리허설 1회에서 합성 자료 복구에 약 3분 55초가 걸렸습니다. 보존 대상 6건의 내용 해시가 일치했고 철회 기록은 복원 사본에서 제외했습니다. [백업 복구 기록](docs/engineering/aws-rehearsal-decisions.md)
+- **HTTP IAM 재검증** · 별도 EC2 내부 시험에서 연결 풀을 수동으로 갱신하고 복구 처리를 한 뒤 상태 API 응답이 `200 → 503 → 200`으로 바뀌는 것을 확인했습니다. [HTTP 시험 기록](docs/engineering/http-iam-revalidation-20261021.md)
+- **답변 지침 비교** · 검색 결과를 고정한 가상 금융 질문 12개에서 RAGAS 근거 충실도는 `0.783 → 0.903`이었습니다. 필요한 조항이 빠져 기본 지침을 유지했습니다. [비교 결과](https://jungseongheon.org/portfolio/evidence/index.html#youth-evaluation)
 
-[문제·설계·재현 방법](docs/finance-consultation-recovery.md) · [개발자 리허설 앱](app/rehearsal_app.py) · [삭제 이력과 복구](app/participant_recovery.py)
+[구현과 로컬 재현](docs/finance-consultation-recovery.md) · [포트폴리오](https://jungseongheon.org/portfolio/#youth-law)
 
-개인 후속 개발에서 수행한 AWS 합성 데이터 리허설은 [실행 경계와 종료 절차](docs/aws-rehearsal.md), [초기 리허설 결정과 관찰 한계](docs/engineering/aws-rehearsal-decisions.md), [초기 리허설 비식별 결과](docs/evidence/aws-rehearsal-20261021.json)에 기록했습니다. 별도의 IAM 연결 재검증은 [기존 연결에 대한 후속 재검증](docs/engineering/iam-connection-revalidation-20261021.md), [실제 HTTP 경로로 수행한 추가 차단·복구 시험](docs/engineering/http-iam-revalidation-20261021.md), [비식별 증거](docs/evidence/http-iam-revalidation-20261021.json)에 정리했습니다. 모든 후속 검증은 팀 프로젝트와 구분되는 개인 작업이며, 실제 사용자·전문가 검토나 운영 서비스 검증을 뜻하지 않습니다. [공개 포트폴리오](https://jungseongheon.org/portfolio)
+## 후속 개발 검증 범위
+
+[개발자 리허설 앱](app/rehearsal_app.py) · [삭제 이력과 복구 코드](app/participant_recovery.py)
 
 상담 흐름의 현재 범위는 로컬 더미 검증입니다. 별도로 수행한 AWS 합성 데이터 리허설은 완료 후 자원을 정리했으며, 상시 서비스 검증은 아닙니다. 전문가 검토는 대기 중이고 실제 참가자 접수는 닫혀 있습니다. 팀 작업·개인 후속 개발, 모델 평가·사용자 효과·운영 검사를 구분합니다.
+
+개인 후속 개발에서 수행한 AWS 합성 데이터 리허설은 [실행 경계와 종료 절차](docs/aws-rehearsal.md), [초기 리허설 결정과 관찰 한계](docs/engineering/aws-rehearsal-decisions.md), [초기 리허설 비식별 결과](docs/evidence/aws-rehearsal-20261021.json)에 기록했습니다. 별도의 IAM 연결 재검증은 [기존 연결에 대한 후속 재검증](docs/engineering/iam-connection-revalidation-20261021.md), [실제 HTTP 경로로 수행한 추가 차단·복구 시험](docs/engineering/http-iam-revalidation-20261021.md), [비식별 증거](docs/evidence/http-iam-revalidation-20261021.json)에 정리했습니다. 모든 후속 검증은 팀 프로젝트와 구분되는 개인 작업이며, 실제 사용자·전문가 검토나 운영 서비스 검증을 뜻하지 않습니다. [공개 포트폴리오](https://jungseongheon.org/portfolio)
 
 ## 차별점 (범용 AI 대비 — 구조적으로 못 하는 것)
 1. **신뢰성**: 현행 법령(국가법령정보센터) 근거 + 답변에 조문 원문·출처·시행일 표시 + 환각 방지
