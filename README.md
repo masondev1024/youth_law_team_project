@@ -1,16 +1,30 @@
-# 청년 생활법률 상담 AI
+# 청년 법률 상담 AI
 
-법률 질문을 분야별로 분류해 법령 근거와 공식 문의 경로를 안내합니다. 팀에서는 금융 분야 검색·Agent와 질문 분류 흐름을 맡았습니다.
+어려운 법률 용어를 몰라도 질문에 맞는 법령을 찾도록 만든 팀 프로젝트입니다. 개인 후속 작업에서는 **첫 금융 상담에 필요한 자료·질문을 정리하는 카드**를 추가하고, 과거 백업을 복원해도 철회한 기록이 다시 조회되지 않도록 복구 절차를 구성했습니다.
 
-## 개인 후속 개발: 금융 첫 상담 준비
+## 맡은 범위
 
-첫 상담 준비 카드와 기록의 인증·철회·복구를 구현했습니다. AWS 리허설에서는 삭제 이력을 DynamoDB에 따로 두고, 백업 사본을 서비스에 연결하기 전에 적용했습니다.
+- **팀 프로젝트** · 금융 분야 Agent와 질문 분류, 법령 청킹·적재, BM25와 임베딩을 결합한 검색 구현.
+- **개인 후속 개발** · 상담 준비 카드, 인증·철회·만료 삭제, 답변 지침 비교와 AWS 백업·권한 복구 검증.
 
-- **백업 복구** · AWS 개발자 리허설 1회에서 합성 자료 복구에 약 3분 55초가 걸렸습니다. 보존 대상 6건의 내용 해시가 일치했고 철회 기록은 복원 사본에서 제외했습니다. [백업 복구 기록](docs/engineering/aws-rehearsal-decisions.md)
-- **HTTP IAM 재검증** · 별도 EC2 내부 시험에서 연결 풀을 수동으로 갱신하고 복구 처리를 한 뒤 상태 API 응답이 `200 → 503 → 200`으로 바뀌는 것을 확인했습니다. [HTTP 시험 기록](docs/engineering/http-iam-revalidation-20261021.md)
-- **답변 지침 비교** · 검색 결과를 고정한 가상 금융 질문 12개에서 RAGAS 근거 충실도는 `0.783 → 0.903`이었습니다. 필요한 조항이 빠져 기본 지침을 유지했습니다. [비교 결과](https://jungseongheon.org/portfolio/evidence/index.html#youth-evaluation)
+## 구조 요약
 
-[구현과 로컬 재현](docs/finance-consultation-recovery.md) · [포트폴리오](https://jungseongheon.org/portfolio/#youth-law)
+```text
+팀 RAG: 질문 분류 → 금융 Agent → 법령 검색 → 근거를 포함한 답변
+개인 앱: 상담 준비 카드 → SQLite 기록 → S3 백업
+복구: 백업의 격리 사본 → DynamoDB 최신 삭제 이력 적용 → 검사 후 연결
+```
+
+**검색·실행 환경** · BM25·Chroma/pgvector, Amazon Bedrock / 개인 리허설 앱은 EC2·SQLite. 답변 평가는 실행 경로와 별도로 고정 문항·검색 결과·모델·채점 조건을 맞춰 비교했습니다.
+
+## 확인한 결과
+
+- **금융 검색 hit@3 0.975 · MRR@3 0.840** · 개인 재평가의 개발용 120문항 중 117문항에서 상위 3개에 정답 조문 포함. [검색 평가 기록](https://jungseongheon.org/portfolio/evidence/index.html#youth-evaluation)
+- **RAGAS 근거 충실도 `0.783 → 0.903`** · 같은 가상 금융 질문 12개로 답변 지침 비교. 점수 상승과 함께 필수 조항 누락을 확인해 기본 지침 유지. [평가 조건·결과](https://jungseongheon.org/portfolio/evidence/finance-ragas-comparison-20261019.json)
+- **새 서버 복구 234.52초** · AWS 합성 자료 복구 1회에서 보존 대상 6건의 내용 해시 일치, 철회 기록 제외 확인. [복구 기록](docs/engineering/aws-rehearsal-decisions.md)
+- **상태 API `200 → 503 → 200`** · 별도 HTTP IAM 차단·복구 시험. 연결 풀 수동 갱신과 복구 처리 후 응답 전환 확인. [HTTP 검증 기록](docs/engineering/http-iam-revalidation-20261021.md)
+
+[포트폴리오 상세](https://jungseongheon.org/portfolio/#youth-law) · [상담 준비·기록 복구 구현](docs/finance-consultation-recovery.md) · [실행 방법](#실행)
 
 ## 후속 개발 검증 범위
 
@@ -20,14 +34,16 @@
 
 개인 후속 개발에서 수행한 AWS 합성 데이터 리허설은 [실행 경계와 종료 절차](docs/aws-rehearsal.md), [초기 리허설 결정과 관찰 한계](docs/engineering/aws-rehearsal-decisions.md), [초기 리허설 비식별 결과](docs/evidence/aws-rehearsal-20261021.json)에 기록했습니다. 별도의 IAM 연결 재검증은 [기존 연결에 대한 후속 재검증](docs/engineering/iam-connection-revalidation-20261021.md), [실제 HTTP 경로로 수행한 추가 차단·복구 시험](docs/engineering/http-iam-revalidation-20261021.md), [비식별 증거](docs/evidence/http-iam-revalidation-20261021.json)에 정리했습니다. 모든 후속 검증은 팀 프로젝트와 구분되는 개인 작업이며, 실제 사용자·전문가 검토나 운영 서비스 검증을 뜻하지 않습니다. [공개 포트폴리오](https://jungseongheon.org/portfolio)
 
-## 차별점 (범용 AI 대비 — 구조적으로 못 하는 것)
-1. **신뢰성**: 현행 법령(국가법령정보센터) 근거 + 답변에 조문 원문·출처·시행일 표시 + 환각 방지
-2. **행동 연결**: 분야별 검증된 공식 연락처·링크 (LLM 생성 금지, contacts.py)
+<a id="차별점-범용-ai-대비--구조적으로-못-하는-것"></a>
+
+## 답변과 근거 제공 방식
+1. **법령 근거**: 수집한 국가법령정보센터 조문의 원문·출처·시행일을 답변에 표시하고 인용 여부 점검
+2. **문의 경로**: 코드에 등록한 분야별 공식 연락처·링크 사용 (LLM 생성 금지, contacts.py)
 3. **문서 초안 생성**: 내용증명·진정서 초안을 법령 근거 담아 생성 (drafter.py, 빈칸은 사용자가 채움)
 
 ## 4분야 자동 라우팅
 입력창 하나. 사용자는 분야를 안 고름 → Supervisor가 자동 분류.
-- 1개 분야 → 전문가 1명 / 복수 분야 → 동시 실행(fan-out) → Planner 종합
+- 1개 분야 → 해당 분야 Agent / 복수 분야 → Agent 동시 실행(fan-out) → Planner 종합
 - 범위 밖(형사 등) → 정직하게 거절(out_of_scope)
 
 ## 구조
@@ -38,11 +54,11 @@ docs/API_SETUP.md          # API 신청 절차
 state.py              # 공유 State 스키마 (SPEC §2). 공용 ⚠️
 graph.py              # 그래프 조립 (fan-out/fan-in). 공용 ⚠️
 common/rag.py         # 공통 RAG 헬퍼 (검색 + 고도화 지점). 공용 ⚠️
-common/contacts.py    # 검증된 공식 연락처 (환각 0). 공용 ⚠️
+common/contacts.py    # 사전 등록한 공식 연락처·링크. 공용 ⚠️
 common/drafter.py     # 문서 초안 생성. 공용 ⚠️
 agents/supervisor.py  # 분야 자동 분류·라우팅. 공용 ⚠️
-agents/verifier.py    # 답변-근거 검증 — 환각 도달 경로 차단(하네스). 공용 ⚠️
-agents/planner.py     # 종합 + 출처 + 연락처 (검증 통과분만). 공용 ⚠️
+agents/verifier.py    # 답변의 인용·근거 점검. 공용 ⚠️
+agents/planner.py     # 검증 결과를 반영한 종합·출처·연락처 구성. 공용 ⚠️
 common/llm.py         # Bedrock 호출 + 구조화 출력 강제. 공용 ⚠️
 agents/{labor,housing,consumer,finance}.py  # 담당 A/B/C/D — 각자 RAG + 문서초안
 app/                  # 웹서비스 — FastAPI(api.py)+Jinja 메인화면(templates/)+Streamlit(ui_streamlit.py)
@@ -59,7 +75,7 @@ tests/test_contracts.py # 계약 테스트
 ## 문서 안내
 - **docs/ONBOARDING.md** — ★처음 시작★ 환경 셋업·데이터 빌드·확인·작업 시작 절차 (새 팀원 여기부터)
 - **docs/DATA_FLOW.md** — 데이터 흐름·형태 (메달리온: bronze→silver→gold→검색, 실제 데이터 예시)
-- **docs/HARNESS.md** — 하네스 엔지니어링 적용 내역 (verifier·contacts·llm·CI가 환각/실수를 구조로 차단하는 방식)
+- **docs/HARNESS.md** — verifier·contacts·llm·CI의 답변·출처·형식 점검 구조
 - **docs/TEAM_GUIDE.md** — 팀 협업 시작 절차 (Day0 킥오프 → 일일 리듬 → 체크포인트). **팀원 전원 필독**
 - **docs/API_SETUP.md** — 데이터 API 인증키 신청 절차 (Day 0)
 - docs/SPEC.md — State·I/O 계약 (코드보다 우선) / CLAUDE.md — 작업 규약 / docs/TODO.md — 작업 보드
@@ -71,7 +87,7 @@ tests/test_contracts.py # 계약 테스트
 cp .env.example .env               # 키 채우기 (팀 공유, docs/API_SETUP.md)
 pip install -r requirements.txt
 python graph.py                          # 단일/복수/범위밖 3케이스 확인 (CLI, 데이터 없어도 stub로 동작)
-python -m pytest tests/                  # 계약 검사 (현재 50 tests)
+python -m pytest tests/                  # 테스트 실행 (실행 결과에서 검사 수 확인)
 uvicorn app.api:app --reload --port 8000 # 웹서비스 (메인화면 http://localhost:8000, API문서 /docs)
 streamlit run app/ui_streamlit.py        # 데모 UI (발표용, http://localhost:8501)
 ruff format . && ruff check .            # 스타일 통일
@@ -94,17 +110,21 @@ python scripts/build_index.py all            # 4분야 구축 (bronze→silver�
 - 개인 메모는 `cp CLAUDE.local.md.example CLAUDE.local.md` (커밋 안 됨).
 
 ## 6일 배분
+
+아래는 팀 프로젝트 당시의 개발 계획입니다. 완료 여부와 검증 결과는 상단 기록 및 연결된 증빙을 기준으로 확인합니다.
 - Day 0(시작 전): 국가법령정보센터 API(OC) 신청(수동 승인 1~2일)
 - Day 1: 골격 확정 + API 샘플 검증 + EC2 최초 구축(build_index) + SPEC §2·§3 freeze
 - Day 2: common/rag.py 벡터DB 백엔드 다같이 구현 + 각자 인덱싱(단순 검색)
-- Day 3-4: 각자 전문가 답변 생성(Bedrock) + 환각 방지 + 연락처/문서초안 연결
+- Day 3-4: 분야별 Agent 답변 생성(Bedrock) + 인용·근거 점검 + 연락처/문서초안 연결
 - Day 5: RAG 고도화(하이브리드+쿼리확장, rag.py에서 → 분야별 게이트로 적용) + 효과 비교
 - Day 6: Streamlit UI(answer_blocks 카드 + 초안 렌더링) + 데모 + 발표
 
-## 데이터 (공공 API·크롤링 0)
-- 근거 조문·검색 코퍼스: 국가법령정보센터 (현행 법령 + 시행일) — **구축·실검색 검증 완료**
+<a id="데이터-공공-api크롤링-0"></a>
 
-> **구축 현황** (`build_index.py all` 검증): 4분야 벡터DB 적재 완료 (로컬 Chroma · EC2 RDS pgvector) —
+## 법령 데이터와 구축 기록
+- 근거 조문·검색 코퍼스: 국가법령정보센터에서 수집한 법령과 시행일. 아래 수치는 팀 프로젝트의 구축·실검색 검증 기록입니다.
+
+> **구축 당시 기록** (`build_index.py all` 검증): 4분야 벡터DB 적재 완료 (로컬 Chroma · EC2 RDS pgvector) —
 > labor 166 / housing 42 / consumer 192 / finance 812 조문 (합계 1,212). 전 분야 `DomainRAG.is_real=True`(stub 아님).
 
 | 분야 | 담당 | 핵심 법령 |
@@ -124,13 +144,13 @@ python scripts/build_index.py all            # 4분야 구축 (bronze→silver�
 python scripts/build_index.py all    # 최초 전체 구축 (bronze→silver→gold)
 python scripts/update_laws.py        # 증분 갱신 — 시행일 바뀐 법령만 재처리
 ```
-법령은 거의 안 바뀌므로 **주 1회 배치**(cron 또는 Airflow DAG)면 충분.
+팀 구성의 기본 갱신 주기는 **주 1회 배치**(cron 또는 Airflow DAG)입니다. 실제 제공 범위에 맞는 갱신 주기와 수집 시점 확인이 필요합니다.
 manifest(data/manifest.json)가 법령별 시행일을 기억해 변경분만 갱신한다.
 ★팀이 채울 동적 내용은 pipeline/config.py 의 LAW_LIST 와 .env 키 뿐.★
 
 ## LangSmith 트레이싱 (Day 2부터)
-.env에 `LANGSMITH_API_KEY` 입력 + `LANGCHAIN_TRACING_V2=true`면 끝 — 코드 수정 0줄.
-smith.langchain.com에서 분류→검색→검증→종합 전 흐름과 노드별 지연·토큰이 보인다.
+.env에 `LANGSMITH_API_KEY`와 `LANGCHAIN_TRACING_V2=true`를 설정하는 추적 경로입니다.
+실행 후 smith.langchain.com에서 분류→검색→검증→종합 흐름과 노드별 지연·토큰 기록 여부를 확인합니다.
 verifier가 답변을 탈락시켰을 때 "왜"를 추적하는 도구이자, 발표 데모 화면.
 
 ## 3축 개선 루프 (각자 자기 분야를 측정하며 개선)
@@ -141,17 +161,17 @@ python scripts/evaluate.py labor   # 자기 분야 스코어카드 (housing/cons
 |---|---|---|
 | ① 평가 | hit@k, MRR | 검색이 정답 조문을 찾는가 (evals/<분야>.jsonl 기준) |
 | ② 비용 | 토큰, $/실행 | 모델 티어링(분류=Haiku/답변=Sonnet) 효과 |
-| ③ 환각 | grounding rate, 평균 인용 | 답변이 verifier 검증을 통과하는가 |
+| ③ 근거 점검 | grounding rate, 평균 인용 | verifier 통과 여부와 인용 수. 법률 정확성 보증과 구분 |
 
 결과는 evals/results/<분야>_history.jsonl에 날짜별 누적 →
 **baseline vs 개선안 비교표가 발표의 기술 깊이 슬라이드가 된다.**
-루프: 구현 수정 → evaluate → 숫자 확인 → 다시 수정. 숫자가 안 오르면 개선이 아니다.
+루프: 구현 수정 → evaluate → 점수와 실패 사례 확인 → 적용 여부 결정. 필수 근거 누락은 점수와 별도로 확인합니다.
 
 ## 발표 메시지
-"범용 AI는 작년 법으로 일반론을 답한다. 우리는 현행 법령을 근거로 출처와 함께 답하고,
-어디로 연락해야 하는지, 어떤 문서를 보내야 하는지까지 정확히 안내한다."
+"질문에 맞는 법령 근거와 출처를 찾아 보여주고, 등록된 공식 문의 경로와 검토할 문서 초안을 함께 제공합니다."
 
 ## 안전 (법률 도메인 주의)
 - "법령 정보 안내"로 프레이밍. 단정적 자문 금지, 답변 끝 전문가 상담 권유.
 - 금융은 투자 조언 아님, 법령 안내로 한정. 문서는 '초안' 명시 + 검토 권장.
 - 범위 밖 질문은 정직하게 거절.
+
